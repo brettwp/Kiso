@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Kiso" basedir=".">
+  <property name="Kiso.dir" value="app"/>
+  <property name="Kiso.file" value="Kiso"/>
+  <property name="testKiso.dir" value="test"/>
+  <property name="testKiso.file" value="testKiso"/>
+
+  <target name="Kiso">
+    <attrib file="${Kiso.dir}/${Kiso.file}.js" readonly="false" hidden="false"/>
+    <concat destfile="${Kiso.dir}/${Kiso.file}.js">
+      <filelist dir="${Kiso.dir}/${Kiso.file}.src" files="_header.js"/>
+			<filelist dir="${Kiso.dir}/${Kiso.file}.src" files="Class.js"/>
+			<filelist dir="${Kiso.dir}/${Kiso.file}.src" files="Interface.js"/>
+      <fileset dir="${Kiso.dir}/${Kiso.file}.src"
+				includes="*.js" 
+				excludes="_header.js,Class.js,Interface.js"/>
+    </concat>
+    <attrib file="${Kiso.dir}/${Kiso.file}.js" readonly="true" hidden="false"/>
+  </target>
+
+  <target name="testKiso">
+    <attrib file="${testKiso.dir}/${testKiso.file}.js" readonly="false" hidden="false"/>
+    <concat destfile="${testKiso.dir}/${testKiso.file}.js">
+      <filelist dir="${testKiso.dir}/${testKiso.file}.src" files="_header.js"/>
+      <fileset dir="${testKiso.dir}/${testKiso.file}.src" 
+				includes="*.js" 
+				excludes="_header.js"/>
+    </concat>
+    <attrib file="${testKiso.dir}/${testKiso.file}.js" readonly="true" hidden="false"/>
+  </target>
+</project>

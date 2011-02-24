@@ -1,0 +1,27 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+	<title>Kiso Tests</title>
+  <link rel="stylesheet" href="../lib/qunit/qunit.css" type="text/css" media="screen" />
+	<script type="text/javascript" src="../lib/jquery/jquery-1.4.2.min.js"></script>
+	<script type="text/javascript" src="../lib/qunit/qunit.js"></script>
+	<script type="text/javascript" src="../app/Kiso.js"></script>
+	<script type="text/javascript" src="testKiso.js"></script>
+	<script type="text/javascript">
+    $(document).ready(function() {
+      UnitTest.testClass();
+      UnitTest.testCookieAdapter();
+      UnitTest.testInterface();
+			UnitTest.testAssertion();
+			UnitTest.testTree();
+    });
+  </script>
+</head>
+<body>
+	<h1 id="qunit-header">QUnit Tests</h1>
+	<h2 id="qunit-banner"></h2>
+	<h2 id="qunit-userAgent"></h2>
+	<ol id="qunit-tests"></ol>
+</body>
+</html>

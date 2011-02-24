@@ -1,0 +1,8 @@
+This is part of an open source project that I started to help me get a better grasp on javascript's
+class/object structure and to work on writing unit tests.  I've been slowly adding parts to it and
+these three are the most stable.
+
+I think it's a good example of how I approach things and the structure I like when time is not an
+issue.  I run a WAMP environment on my home machine so I use a php script (not included in the GIT
+upload) to compile my javascript files on the fly.  I use qunit for unit testing and Ant 
+(build.xml) to make the final build.
