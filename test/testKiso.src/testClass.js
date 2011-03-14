@@ -1,8 +1,8 @@
-UnitTest.testClass = function() {
+unittest.testClass = function() {
 	module('Kiso.Class Tests');
 
 	test('Member variable default value', function() {
-		var testClass = Kiso.Class({
+		var testClass = kiso.Class({
 			x: 'xyz',
 			y: null
 		});
@@ -13,7 +13,7 @@ UnitTest.testClass = function() {
 	});
 
 	test('Constructor called', function() {
-		var testClass = Kiso.Class({
+		var testClass = kiso.Class({
 			x: 'xyz',
 			initialize: function(y) {
 				this.x = y;
@@ -25,7 +25,7 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Method binding', function() {
-  	var testClass = Kiso.Class({
+  	var testClass = kiso.Class({
 			counter: null,
 			initialize: function() {
 				this.counter = 0;
@@ -41,7 +41,7 @@ UnitTest.testClass = function() {
   });
 	
 	test('Array unique to instance', function() {
-		var testClass = Kiso.Class({
+		var testClass = kiso.Class({
 			a: [1, 2, 3]
 		});
 		var testObj1 = new testClass();
@@ -51,7 +51,7 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Object unique to instance', function() {
-		var testClass = Kiso.Class({
+		var testClass = kiso.Class({
 			a: {
 	  		x: 1,
 	  		y: 2,
@@ -65,7 +65,7 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Mixed array-object unique to instance', function() {
-		var testClass = Kiso.Class({
+		var testClass = kiso.Class({
 			a: {
 	  		x: [{ deep: [8, 9, 10] }, { extra: 'extra' }],
 	  		y: 2,
@@ -79,13 +79,13 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Simple inheritance', function() {
-		var parentClass = Kiso.Class({
+		var parentClass = kiso.Class({
 			name: 'Brett',
 			sayName: function() {
 				return this.name;
 			}
 		});
-		var childClass = Kiso.Class(parentClass, {
+		var childClass = kiso.Class(parentClass, {
 			number: 10,
 			sayNameAndNumber: function() {
 				return this.sayName() + this.number;
@@ -98,13 +98,13 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Function overloading', function() {
-		var parentClass = Kiso.Class({
+		var parentClass = kiso.Class({
 			name: 'Brett',
 			sayName: function() {
 				return this.name;
 			}
 		});
-		var childClass = Kiso.Class(parentClass, {
+		var childClass = kiso.Class(parentClass, {
 			sayName: function() {
 				return 'Name=' + this.name;
 			}
@@ -115,7 +115,7 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Call parent constructor and function', function() {
-		var parentClass = Kiso.Class({
+		var parentClass = kiso.Class({
 			name: 'Brett',
 			initialize: function(name) {
 				if (name) this.name = name;
@@ -124,7 +124,7 @@ UnitTest.testClass = function() {
 				return this.name;
 			}
 		});
-		var childClass = Kiso.Class(parentClass, {
+		var childClass = kiso.Class(parentClass, {
 			sayName: function() {
 				return 'Name=' + this.name;
 			},
@@ -139,13 +139,13 @@ UnitTest.testClass = function() {
 	});
 
   test('Inherit using object {extends: ...}', function() {
-		var parentClass = Kiso.Class({
+		var parentClass = kiso.Class({
 			name: 'Brett',
 			sayName: function() {
 				return this.name;
 			}
 		});
-		var childClass = Kiso.Class(
+		var childClass = kiso.Class(
       {
         parent: parentClass
       },
@@ -163,8 +163,8 @@ UnitTest.testClass = function() {
 	});
 
   test('Implements single Interface', function() {
-		var testInterface = Kiso.Interface(['foo', 'bar', 'baz']);
-    var testClass = Kiso.Class(
+		var testInterface = kiso.Interface(['foo', 'bar', 'baz']);
+    var testClass = kiso.Class(
       {
         interfaces: testInterface
       },
@@ -182,9 +182,9 @@ UnitTest.testClass = function() {
 	});
 
   test('Implements array of Interfaces', function() {
-		var testInterface1 = Kiso.Interface(['foo', 'bar']);
-    var testInterface2 = Kiso.Interface(['baz', 'tim']);
-    var testClass = Kiso.Class(
+		var testInterface1 = kiso.Interface(['foo', 'bar']);
+    var testInterface2 = kiso.Interface(['baz', 'tim']);
+    var testClass = kiso.Class(
       {
         interfaces: [testInterface1, testInterface2]
       },
@@ -207,8 +207,8 @@ UnitTest.testClass = function() {
     var errorThrown = false;
     var errorMsg = 'No error thrown.';
     try {
-      var testInterface = Kiso.Interface(['foo', 'bar', 'baz']);
-      var testClass = Kiso.Class(
+      var testInterface = kiso.Interface(['foo', 'bar', 'baz']);
+      var testClass = kiso.Class(
         {
           interfaces: testInterface
         },
@@ -227,7 +227,7 @@ UnitTest.testClass = function() {
 	});
 
   test('Class constants', function() {
-    var testClass = Kiso.Class(
+    var testClass = kiso.Class(
       {
         constants: {
 					Backward: -1,

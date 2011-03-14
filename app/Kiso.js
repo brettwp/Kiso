@@ -1,12 +1,13 @@
 /*!
- * Kiso JavaScript Library v0.1.3
+ * kiso JavaScript Library v0.2.0
  * Copyright 2010 Brett Pontarelli
  * Licensed under the MIT License.
  */
 /** @namespace */
-this.Kiso = this.Kiso || {};
-Kiso.VERSION = '0.1.2';
-Kiso.Class = function(parentClassOrObj, childDefinition) {
+this.kiso = this.kiso || {};
+kiso.VERSION = '0.2.0';
+
+kiso.Class = function(parentClassOrObj, childDefinition) {
 	return create(parentClassOrObj, childDefinition);
 
 	function create(parentClassOrObj, childDefinition) {
@@ -121,7 +122,7 @@ Kiso.Class = function(parentClassOrObj, childDefinition) {
 		}
 	}
 };
-Kiso.Interface = function(parentInterface, methods) {
+kiso.Interface = function(parentInterface, methods) {
   return create(parentInterface, methods);
 
   function create(parentInterface, methods) {
@@ -150,7 +151,105 @@ Kiso.Interface = function(parentInterface, methods) {
     }
   }
 };
-Kiso.CookieAdapter = Kiso.Class({
+/** @namespace */
+kiso.data = {};kiso.data.ITree = new kiso.Interface([
+	'addChild',
+	'getChild',
+	'getChildCount',
+	'removeChild',
+	'getParent',
+	'getData',
+	'setData',
+	'purgeData',
+	'isLeaf',
+	'isRoot',
+	'isEmpty'
+]);
+kiso.data.Tree = kiso.Class(
+	{
+		interfaces: kiso.data.ITree
+	},
+	{
+		_data: null,
+		_parentTree: null,
+		_childTrees: null,
+
+		initialize: function() {
+			this._childTrees = new Array();
+		},
+
+		addChild: function(tree) {
+			this._childTrees.push(tree);
+			tree._parentTree = this;
+		},
+
+		getChildCount: function() {
+			return this._childTrees.length;
+		},
+
+		getChild: function(index) {
+			if (index < 0 || index >= this._childTrees.length) {
+				throw new Error('Index out of bounds');
+			} else {
+				return this._childTrees[index];
+			}
+		},
+
+		getParent: function() {
+			return this._parentTree;
+		},
+
+		isLeaf: function() {
+			return (this._childTrees.length == 0);
+		},
+
+		isRoot: function() {
+			return (this._parentTree === null);
+		},
+
+		removeChild: function(indexOrTree) {
+			if (indexOrTree instanceof kiso.data.Tree) {
+				this._removeChildByTree(indexOrTree);
+			} else {
+				this._removeChildByIndex(indexOrTree);
+			}
+		},
+
+		_removeChildByTree: function(tree) {
+			for (var i=0; i<this._childTrees.length; i++) {
+				if (tree == this._childTrees[i]) {
+					this._removeChildByIndex(i);
+				}
+			}
+		},
+
+		_removeChildByIndex: function(index) {
+			if (index < 0 || index >= this._childTrees.length) {
+				throw new Error('Index out of bounds');
+			} else {
+				this._childTrees.splice(index,1);
+			}
+		},
+		
+		getData: function() {
+			return this._data;
+		},
+		
+		setData: function(data) {
+			this._data = data;
+		},
+		
+		purgeData: function() {
+			this._data = null;
+		},
+		
+		isEmpty: function() {
+			return (this._data == null);
+		}
+	}
+);
+/** @namespace */
+kiso.ui = {};kiso.ui.CookieAdapter = kiso.Class({
 	_MS_PER_DAY: 60 * 60 * 24 * 1000,
 
 	setCookie: function(cookieName, cookieValue, daysOrObject) {
@@ -222,99 +321,3 @@ Kiso.CookieAdapter = Kiso.Class({
   	return document.cookie;
   }
 });
-Kiso.ITree = new Kiso.Interface([
-	'addChild',
-	'getChild',
-	'getChildCount',
-	'removeChild',
-	'getParent',
-	'getData',
-	'setData',
-	'purgeData',
-	'isLeaf',
-	'isRoot',
-	'isEmpty'
-]);
-Kiso.Tree = Kiso.Class(
-	{
-		interfaces: Kiso.ITree
-	},
-	{
-		_data: null,
-		_parentTree: null,
-		_childTrees: null,
-
-		initialize: function() {
-			this._childTrees = new Array();
-		},
-
-		addChild: function(tree) {
-			this._childTrees.push(tree);
-			tree._parentTree = this;
-		},
-
-		getChildCount: function() {
-			return this._childTrees.length;
-		},
-
-		getChild: function(index) {
-			if (index < 0 || index >= this._childTrees.length) {
-				throw new Error('Index out of bounds');
-			} else {
-				return this._childTrees[index];
-			}
-		},
-
-		getParent: function() {
-			return this._parentTree;
-		},
-
-		isLeaf: function() {
-			return (this._childTrees.length == 0);
-		},
-
-		isRoot: function() {
-			return (this._parentTree === null);
-		},
-
-		removeChild: function(indexOrTree) {
-			if (indexOrTree instanceof Kiso.Tree) {
-				this._removeChildByTree(indexOrTree);
-			} else {
-				this._removeChildByIndex(indexOrTree);
-			}
-		},
-
-		_removeChildByTree: function(tree) {
-			for (var i=0; i<this._childTrees.length; i++) {
-				if (tree == this._childTrees[i]) {
-					this._removeChildByIndex(i);
-				}
-			}
-		},
-
-		_removeChildByIndex: function(index) {
-			if (index < 0 || index >= this._childTrees.length) {
-				throw new Error('Index out of bounds');
-			} else {
-				this._childTrees.splice(index,1);
-			}
-		},
-		
-		getData: function() {
-			return this._data;
-		},
-		
-		setData: function(data) {
-			this._data = data;
-		},
-		
-		purgeData: function() {
-			this._data = null;
-		},
-		
-		isEmpty: function() {
-			return (this._data == null);
-		}
-	}
-);

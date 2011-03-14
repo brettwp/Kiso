@@ -1,6 +1,6 @@
-Kiso.Tree = Kiso.Class(
+kiso.data.Tree = kiso.Class(
 	{
-		interfaces: Kiso.ITree
+		interfaces: kiso.data.ITree
 	},
 	{
 		_data: null,
@@ -41,7 +41,7 @@ Kiso.Tree = Kiso.Class(
 		},
 
 		removeChild: function(indexOrTree) {
-			if (indexOrTree instanceof Kiso.Tree) {
+			if (indexOrTree instanceof kiso.data.Tree) {
 				this._removeChildByTree(indexOrTree);
 			} else {
 				this._removeChildByIndex(indexOrTree);

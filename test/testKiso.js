@@ -1,14 +1,14 @@
 /*!
- * Unit Tests for Kiso JavaScript Library
+ * Unit Tests for kiso JavaScript Library
  * Copyright 2010 Brett Pontarelli
  * Licensed under the MIT License.
  */
-this.UnitTest = this.UnitTest || {};
-UnitTest.testClass = function() {
+this.unittest = this.unittest || {};
+unittest.testClass = function() {
 	module('Kiso.Class Tests');
 
 	test('Member variable default value', function() {
-		var testClass = Kiso.Class({
+		var testClass = kiso.Class({
 			x: 'xyz',
 			y: null
 		});
@@ -19,7 +19,7 @@ UnitTest.testClass = function() {
 	});
 
 	test('Constructor called', function() {
-		var testClass = Kiso.Class({
+		var testClass = kiso.Class({
 			x: 'xyz',
 			initialize: function(y) {
 				this.x = y;
@@ -31,7 +31,7 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Method binding', function() {
-  	var testClass = Kiso.Class({
+  	var testClass = kiso.Class({
 			counter: null,
 			initialize: function() {
 				this.counter = 0;
@@ -47,7 +47,7 @@ UnitTest.testClass = function() {
   });
 	
 	test('Array unique to instance', function() {
-		var testClass = Kiso.Class({
+		var testClass = kiso.Class({
 			a: [1, 2, 3]
 		});
 		var testObj1 = new testClass();
@@ -57,7 +57,7 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Object unique to instance', function() {
-		var testClass = Kiso.Class({
+		var testClass = kiso.Class({
 			a: {
 	  		x: 1,
 	  		y: 2,
@@ -71,7 +71,7 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Mixed array-object unique to instance', function() {
-		var testClass = Kiso.Class({
+		var testClass = kiso.Class({
 			a: {
 	  		x: [{ deep: [8, 9, 10] }, { extra: 'extra' }],
 	  		y: 2,
@@ -85,13 +85,13 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Simple inheritance', function() {
-		var parentClass = Kiso.Class({
+		var parentClass = kiso.Class({
 			name: 'Brett',
 			sayName: function() {
 				return this.name;
 			}
 		});
-		var childClass = Kiso.Class(parentClass, {
+		var childClass = kiso.Class(parentClass, {
 			number: 10,
 			sayNameAndNumber: function() {
 				return this.sayName() + this.number;
@@ -104,13 +104,13 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Function overloading', function() {
-		var parentClass = Kiso.Class({
+		var parentClass = kiso.Class({
 			name: 'Brett',
 			sayName: function() {
 				return this.name;
 			}
 		});
-		var childClass = Kiso.Class(parentClass, {
+		var childClass = kiso.Class(parentClass, {
 			sayName: function() {
 				return 'Name=' + this.name;
 			}
@@ -121,7 +121,7 @@ UnitTest.testClass = function() {
 	});
 	
 	test('Call parent constructor and function', function() {
-		var parentClass = Kiso.Class({
+		var parentClass = kiso.Class({
 			name: 'Brett',
 			initialize: function(name) {
 				if (name) this.name = name;
@@ -130,7 +130,7 @@ UnitTest.testClass = function() {
 				return this.name;
 			}
 		});
-		var childClass = Kiso.Class(parentClass, {
+		var childClass = kiso.Class(parentClass, {
 			sayName: function() {
 				return 'Name=' + this.name;
 			},
@@ -145,13 +145,13 @@ UnitTest.testClass = function() {
 	});
 
   test('Inherit using object {extends: ...}', function() {
-		var parentClass = Kiso.Class({
+		var parentClass = kiso.Class({
 			name: 'Brett',
 			sayName: function() {
 				return this.name;
 			}
 		});
-		var childClass = Kiso.Class(
+		var childClass = kiso.Class(
       {
         parent: parentClass
       },
@@ -169,8 +169,8 @@ UnitTest.testClass = function() {
 	});
 
   test('Implements single Interface', function() {
-		var testInterface = Kiso.Interface(['foo', 'bar', 'baz']);
-    var testClass = Kiso.Class(
+		var testInterface = kiso.Interface(['foo', 'bar', 'baz']);
+    var testClass = kiso.Class(
       {
         interfaces: testInterface
       },
@@ -188,9 +188,9 @@ UnitTest.testClass = function() {
 	});
 
   test('Implements array of Interfaces', function() {
-		var testInterface1 = Kiso.Interface(['foo', 'bar']);
-    var testInterface2 = Kiso.Interface(['baz', 'tim']);
-    var testClass = Kiso.Class(
+		var testInterface1 = kiso.Interface(['foo', 'bar']);
+    var testInterface2 = kiso.Interface(['baz', 'tim']);
+    var testClass = kiso.Class(
       {
         interfaces: [testInterface1, testInterface2]
       },
@@ -213,8 +213,8 @@ UnitTest.testClass = function() {
     var errorThrown = false;
     var errorMsg = 'No error thrown.';
     try {
-      var testInterface = Kiso.Interface(['foo', 'bar', 'baz']);
-      var testClass = Kiso.Class(
+      var testInterface = kiso.Interface(['foo', 'bar', 'baz']);
+      var testClass = kiso.Class(
         {
           interfaces: testInterface
         },
@@ -233,7 +233,7 @@ UnitTest.testClass = function() {
 	});
 
   test('Class constants', function() {
-    var testClass = Kiso.Class(
+    var testClass = kiso.Class(
       {
         constants: {
 					Backward: -1,
@@ -256,10 +256,118 @@ UnitTest.testClass = function() {
 		ok(testObj.testConst());
 	});
 };
-UnitTest.testCookieAdapter = function() {
+unittest.testInterface = function() {
+	module('Kiso.Interface Tests');
+
+  test('Create Interface', function() {
+    expect(1);
+    var testInterface = kiso.Interface(['foo', 'bar', 'baz']);
+    deepEqual(testInterface.getMethods(), ['foo', 'bar', 'baz']);
+  });
+
+  test('Extend Interface', function() {
+    var parentInterface = kiso.Interface(['foo', 'bar']);
+    var extendedInterface = kiso.Interface(parentInterface, ['baz', 'tim']);
+    expect(1);
+    deepEqual(extendedInterface.getMethods(), ['foo', 'bar', 'baz', 'tim']);
+  });
+};
+unittest.data = {};
+unittest.data.testTree = function() {
+	module('kiso.data.Tree Tests');
+
+	test('Add children and get by index', function() {
+		var testNode = new kiso.data.Tree();
+		var childNode1 = new kiso.data.Tree();
+		var childNode2 = new kiso.data.Tree();
+		testNode.addChild(childNode1);
+		testNode.addChild(childNode2);
+		expect(2);
+		ok(testNode.getChild(0) == childNode1);
+		ok(testNode.getChild(1) == childNode2);
+	});
+
+	test('Add children and check parent connection', function() {
+		var parentNode = new kiso.data.Tree();
+		var childNode = new kiso.data.Tree();
+		parentNode.addChild(childNode);
+		expect(2);
+		ok(parentNode.getChild(0) == childNode);
+		ok(childNode.getParent() == parentNode);
+	});
+
+	test('Unlinked node has zero children', function() {
+		var testNode = new kiso.data.Tree();
+		expect(1);
+		equal(testNode.getChildCount(), 0);
+	});
+
+	test('Get number children', function() {
+		var parentNode = new kiso.data.Tree();
+		parentNode.addChild(new kiso.data.Tree());
+		parentNode.addChild(new kiso.data.Tree());
+		parentNode.addChild(new kiso.data.Tree());
+		expect(1);
+		equal(parentNode.getChildCount(), 3);
+	});
+
+	test('Remove child by index', function() {
+		var parentNode = new kiso.data.Tree();
+		var childNode = new kiso.data.Tree();
+		parentNode.addChild(new kiso.data.Tree());
+		parentNode.addChild(new kiso.data.Tree());
+		parentNode.addChild(childNode);
+		parentNode.removeChild(1);
+		expect(2);
+		equal(parentNode.getChildCount(), 2);
+		ok(parentNode.getChild(1) == childNode);
+	});
+
+	test('Remove child by node', function() {
+		var parentNode = new kiso.data.Tree();
+		var childNode1 = new kiso.data.Tree();
+		var childNode2 = new kiso.data.Tree();
+		parentNode.addChild(new kiso.data.Tree());
+		parentNode.addChild(childNode1);
+		parentNode.addChild(childNode2);
+		parentNode.removeChild(childNode1);
+		expect(2);
+		equal(parentNode.getChildCount(), 2);
+		ok(parentNode.getChild(1) == childNode2);
+	});
+
+	test('Is leaf, node, and/or root?', function() {
+		var parentNode = new kiso.data.Tree();
+		var childNode1 = new kiso.data.Tree();
+		var childNode2 = new kiso.data.Tree();
+		parentNode.addChild(childNode1);
+		childNode1.addChild(childNode2);
+		expect(6);
+		ok(parentNode.isRoot(), 'Parent is Root');
+		ok(!parentNode.isLeaf(), 'Parent not a leaf');
+		ok(!childNode1.isRoot(), 'Child1 is not root');
+		ok(!childNode1.isLeaf(), 'Child1 is not a leaf');
+		ok(!childNode2.isRoot(), 'Child2 is not root');
+		ok(childNode2.isLeaf(), 'Child2 is a leaf');
+	});
+	
+	test('Get/set/purge data', function() {
+		var testNode = new kiso.data.Tree();
+		var testObj = new kiso.Class({ data: null });
+		testNode.setData(testObj);
+		expect(4);
+		equal(testNode.getData(), testObj);
+		ok(!testNode.isEmpty());
+		testNode.purgeData();
+		equal(testNode.getData(), null);
+		ok(testNode.isEmpty());
+	});
+};
+unittest.ui = {};
+unittest.ui.testCookieAdapter = function() {
 	var mockDocumentCookie;
-	var MockCookieAdapter = new Kiso.Class(
-		Kiso.CookieAdapter,
+	var MockCookieAdapter = new kiso.Class(
+		kiso.ui.CookieAdapter,
 		{
 			_setDocumentCookie: function(cookieDef) {
 		  	mockDocumentCookie = cookieDef;
@@ -270,7 +378,7 @@ UnitTest.testCookieAdapter = function() {
 		}
 	);
 
-	module('Kiso.CookieAdapter Tests with Mock Date and Cookie', {
+	module('kiso.ui.CookieAdapter Tests with Mock Date and Cookie', {
 		setup: function() {
 			this.testMockCookieAdapter = new MockCookieAdapter();
 		  this.origDateGetTime = Date.prototype.getTime;
@@ -340,119 +448,13 @@ UnitTest.testCookieAdapter = function() {
 		equal(mockDocumentCookie.substr(0,expStr.length), expStr);
 	});
 	
-	module('Kiso.CookieAdapter Browser Tests');
+	module('kiso.ui.CookieAdapter Browser Tests');
 
 	test('Set and Clear', function() {
-		var cookieAdapter = new Kiso.CookieAdapter();
+		var cookieAdapter = new kiso.ui.CookieAdapter();
 		cookieAdapter.setCookie('Temp', 'Short', 1);
 		cookieAdapter.clearCookie('Temp');
 		expect(1);
 		ok(!cookieAdapter.isCookieSet('Temp'));
-	});
-};
-UnitTest.testInterface = function() {
-	module('Kiso.Interface Tests');
-
-  test('Create Interface', function() {
-    expect(1);
-    var testInterface = Kiso.Interface(['foo', 'bar', 'baz']);
-    deepEqual(testInterface.getMethods(), ['foo', 'bar', 'baz']);
-  });
-
-  test('Extend Interface', function() {
-    var parentInterface = Kiso.Interface(['foo', 'bar']);
-    var extendedInterface = Kiso.Interface(parentInterface, ['baz', 'tim']);
-    expect(1);
-    deepEqual(extendedInterface.getMethods(), ['foo', 'bar', 'baz', 'tim']);
-  });
-};
-UnitTest.testTree = function() {
-	module('Kiso.Tree Tests');
-
-	test('Add children and get by index', function() {
-		var testNode = new Kiso.Tree();
-		var childNode1 = new Kiso.Tree();
-		var childNode2 = new Kiso.Tree();
-		testNode.addChild(childNode1);
-		testNode.addChild(childNode2);
-		expect(2);
-		ok(testNode.getChild(0) == childNode1);
-		ok(testNode.getChild(1) == childNode2);
-	});
-
-	test('Add children and check parent connection', function() {
-		var parentNode = new Kiso.Tree();
-		var childNode = new Kiso.Tree();
-		parentNode.addChild(childNode);
-		expect(2);
-		ok(parentNode.getChild(0) == childNode);
-		ok(childNode.getParent() == parentNode);
-	});
-
-	test('Unlinked node has zero children', function() {
-		var testNode = new Kiso.Tree();
-		expect(1);
-		equal(testNode.getChildCount(), 0);
-	});
-
-	test('Get number children', function() {
-		var parentNode = new Kiso.Tree();
-		parentNode.addChild(new Kiso.Tree());
-		parentNode.addChild(new Kiso.Tree());
-		parentNode.addChild(new Kiso.Tree());
-		expect(1);
-		equal(parentNode.getChildCount(), 3);
-	});
-
-	test('Remove child by index', function() {
-		var parentNode = new Kiso.Tree();
-		var childNode = new Kiso.Tree();
-		parentNode.addChild(new Kiso.Tree());
-		parentNode.addChild(new Kiso.Tree());
-		parentNode.addChild(childNode);
-		parentNode.removeChild(1);
-		expect(2);
-		equal(parentNode.getChildCount(), 2);
-		ok(parentNode.getChild(1) == childNode);
-	});
-
-	test('Remove child by node', function() {
-		var parentNode = new Kiso.Tree();
-		var childNode1 = new Kiso.Tree();
-		var childNode2 = new Kiso.Tree();
-		parentNode.addChild(new Kiso.Tree());
-		parentNode.addChild(childNode1);
-		parentNode.addChild(childNode2);
-		parentNode.removeChild(childNode1);
-		expect(2);
-		equal(parentNode.getChildCount(), 2);
-		ok(parentNode.getChild(1) == childNode2);
-	});
-
-	test('Is leaf, node, and/or root?', function() {
-		var parentNode = new Kiso.Tree();
-		var childNode1 = new Kiso.Tree();
-		var childNode2 = new Kiso.Tree();
-		parentNode.addChild(childNode1);
-		childNode1.addChild(childNode2);
-		expect(6);
-		ok(parentNode.isRoot(), 'Parent is Root');
-		ok(!parentNode.isLeaf(), 'Parent not a leaf');
-		ok(!childNode1.isRoot(), 'Child1 is not root');
-		ok(!childNode1.isLeaf(), 'Child1 is not a leaf');
-		ok(!childNode2.isRoot(), 'Child2 is not root');
-		ok(childNode2.isLeaf(), 'Child2 is a leaf');
-	});
-	
-	test('Get/set/purge data', function() {
-		var testNode = new Kiso.Tree();
-		var testObj = new Kiso.Class({ data: null });
-		testNode.setData(testObj);
-		expect(4);
-		equal(testNode.getData(), testObj);
-		ok(!testNode.isEmpty());
-		testNode.purgeData();
-		equal(testNode.getData(), null);
-		ok(testNode.isEmpty());
 	});
 };

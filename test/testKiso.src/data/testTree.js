@@ -1,10 +1,10 @@
-UnitTest.testTree = function() {
-	module('Kiso.Tree Tests');
+unittest.data.testTree = function() {
+	module('kiso.data.Tree Tests');
 
 	test('Add children and get by index', function() {
-		var testNode = new Kiso.Tree();
-		var childNode1 = new Kiso.Tree();
-		var childNode2 = new Kiso.Tree();
+		var testNode = new kiso.data.Tree();
+		var childNode1 = new kiso.data.Tree();
+		var childNode2 = new kiso.data.Tree();
 		testNode.addChild(childNode1);
 		testNode.addChild(childNode2);
 		expect(2);
@@ -13,8 +13,8 @@ UnitTest.testTree = function() {
 	});
 
 	test('Add children and check parent connection', function() {
-		var parentNode = new Kiso.Tree();
-		var childNode = new Kiso.Tree();
+		var parentNode = new kiso.data.Tree();
+		var childNode = new kiso.data.Tree();
 		parentNode.addChild(childNode);
 		expect(2);
 		ok(parentNode.getChild(0) == childNode);
@@ -22,25 +22,25 @@ UnitTest.testTree = function() {
 	});
 
 	test('Unlinked node has zero children', function() {
-		var testNode = new Kiso.Tree();
+		var testNode = new kiso.data.Tree();
 		expect(1);
 		equal(testNode.getChildCount(), 0);
 	});
 
 	test('Get number children', function() {
-		var parentNode = new Kiso.Tree();
-		parentNode.addChild(new Kiso.Tree());
-		parentNode.addChild(new Kiso.Tree());
-		parentNode.addChild(new Kiso.Tree());
+		var parentNode = new kiso.data.Tree();
+		parentNode.addChild(new kiso.data.Tree());
+		parentNode.addChild(new kiso.data.Tree());
+		parentNode.addChild(new kiso.data.Tree());
 		expect(1);
 		equal(parentNode.getChildCount(), 3);
 	});
 
 	test('Remove child by index', function() {
-		var parentNode = new Kiso.Tree();
-		var childNode = new Kiso.Tree();
-		parentNode.addChild(new Kiso.Tree());
-		parentNode.addChild(new Kiso.Tree());
+		var parentNode = new kiso.data.Tree();
+		var childNode = new kiso.data.Tree();
+		parentNode.addChild(new kiso.data.Tree());
+		parentNode.addChild(new kiso.data.Tree());
 		parentNode.addChild(childNode);
 		parentNode.removeChild(1);
 		expect(2);
@@ -49,10 +49,10 @@ UnitTest.testTree = function() {
 	});
 
 	test('Remove child by node', function() {
-		var parentNode = new Kiso.Tree();
-		var childNode1 = new Kiso.Tree();
-		var childNode2 = new Kiso.Tree();
-		parentNode.addChild(new Kiso.Tree());
+		var parentNode = new kiso.data.Tree();
+		var childNode1 = new kiso.data.Tree();
+		var childNode2 = new kiso.data.Tree();
+		parentNode.addChild(new kiso.data.Tree());
 		parentNode.addChild(childNode1);
 		parentNode.addChild(childNode2);
 		parentNode.removeChild(childNode1);
@@ -62,9 +62,9 @@ UnitTest.testTree = function() {
 	});
 
 	test('Is leaf, node, and/or root?', function() {
-		var parentNode = new Kiso.Tree();
-		var childNode1 = new Kiso.Tree();
-		var childNode2 = new Kiso.Tree();
+		var parentNode = new kiso.data.Tree();
+		var childNode1 = new kiso.data.Tree();
+		var childNode2 = new kiso.data.Tree();
 		parentNode.addChild(childNode1);
 		childNode1.addChild(childNode2);
 		expect(6);
@@ -77,8 +77,8 @@ UnitTest.testTree = function() {
 	});
 	
 	test('Get/set/purge data', function() {
-		var testNode = new Kiso.Tree();
-		var testObj = new Kiso.Class({ data: null });
+		var testNode = new kiso.data.Tree();
+		var testObj = new kiso.Class({ data: null });
 		testNode.setData(testObj);
 		expect(4);
 		equal(testNode.getData(), testObj);

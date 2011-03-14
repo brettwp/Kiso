@@ -1,4 +1,4 @@
-Kiso.CookieAdapter = Kiso.Class({
+kiso.ui.CookieAdapter = kiso.Class({
 	_MS_PER_DAY: 60 * 60 * 24 * 1000,
 
 	setCookie: function(cookieName, cookieValue, daysOrObject) {

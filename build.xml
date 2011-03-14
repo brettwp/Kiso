@@ -9,11 +9,11 @@
     <attrib file="${Kiso.dir}/${Kiso.file}.js" readonly="false" hidden="false"/>
     <concat destfile="${Kiso.dir}/${Kiso.file}.js">
       <filelist dir="${Kiso.dir}/${Kiso.file}.src" files="_header.js"/>
-			<filelist dir="${Kiso.dir}/${Kiso.file}.src" files="Class.js"/>
-			<filelist dir="${Kiso.dir}/${Kiso.file}.src" files="Interface.js"/>
-      <fileset dir="${Kiso.dir}/${Kiso.file}.src"
-				includes="*.js" 
-				excludes="_header.js,Class.js,Interface.js"/>
+			<fileset dir="${Kiso.dir}/${Kiso.file}.src" includes="*.js" excludes="_header.js"/>
+			<filelist dir="${Kiso.dir}/${Kiso.file}.src/data" files="_header.js"/>
+      <fileset dir="${Kiso.dir}/${Kiso.file}.src/data" includes="*.js" excludes="_header.js"/>
+			<filelist dir="${Kiso.dir}/${Kiso.file}.src/ui" files="_header.js"/>
+      <fileset dir="${Kiso.dir}/${Kiso.file}.src/ui" includes="*.js" excludes="_header.js"/>
     </concat>
     <attrib file="${Kiso.dir}/${Kiso.file}.js" readonly="true" hidden="false"/>
   </target>
@@ -21,10 +21,12 @@
   <target name="testKiso">
     <attrib file="${testKiso.dir}/${testKiso.file}.js" readonly="false" hidden="false"/>
     <concat destfile="${testKiso.dir}/${testKiso.file}.js">
-      <filelist dir="${testKiso.dir}/${testKiso.file}.src" files="_header.js"/>
-      <fileset dir="${testKiso.dir}/${testKiso.file}.src" 
-				includes="*.js" 
-				excludes="_header.js"/>
+			<filelist dir="${testKiso.dir}/${testKiso.file}.src" files="_header.js"/>
+      <fileset dir="${testKiso.dir}/${testKiso.file}.src" includes="*.js" excludes="_header.js"/>
+			<filelist dir="${testKiso.dir}/${testKiso.file}.src/data" files="_header.js"/>
+      <fileset dir="${testKiso.dir}/${testKiso.file}.src/data" includes="*.js" excludes="_header.js"/>
+			<filelist dir="${testKiso.dir}/${testKiso.file}.src/ui" files="_header.js"/>
+      <fileset dir="${testKiso.dir}/${testKiso.file}.src/ui" includes="*.js" excludes="_header.js"/>
     </concat>
     <attrib file="${testKiso.dir}/${testKiso.file}.js" readonly="true" hidden="false"/>
   </target>

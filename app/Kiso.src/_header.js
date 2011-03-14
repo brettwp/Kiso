@@ -1,8 +1,9 @@
 /*!
- * Kiso JavaScript Library v0.1.3
+ * kiso JavaScript Library v0.2.0
  * Copyright 2010 Brett Pontarelli
  * Licensed under the MIT License.
  */
 /** @namespace */
-this.Kiso = this.Kiso || {};
-Kiso.VERSION = '0.1.2';
+this.kiso = this.kiso || {};
+kiso.VERSION = '0.2.0';
+

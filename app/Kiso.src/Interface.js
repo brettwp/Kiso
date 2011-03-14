@@ -1,4 +1,4 @@
-Kiso.Interface = function(parentInterface, methods) {
+kiso.Interface = function(parentInterface, methods) {
   return create(parentInterface, methods);
 
   function create(parentInterface, methods) {

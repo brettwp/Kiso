@@ -1,4 +1,4 @@
-Kiso.Class = function(parentClassOrObj, childDefinition) {
+kiso.Class = function(parentClassOrObj, childDefinition) {
 	return create(parentClassOrObj, childDefinition);
 
 	function create(parentClassOrObj, childDefinition) {

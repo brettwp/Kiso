@@ -1,7 +1,7 @@
-UnitTest.testCookieAdapter = function() {
+unittest.ui.testCookieAdapter = function() {
 	var mockDocumentCookie;
-	var MockCookieAdapter = new Kiso.Class(
-		Kiso.CookieAdapter,
+	var MockCookieAdapter = new kiso.Class(
+		kiso.ui.CookieAdapter,
 		{
 			_setDocumentCookie: function(cookieDef) {
 		  	mockDocumentCookie = cookieDef;
@@ -12,7 +12,7 @@ UnitTest.testCookieAdapter = function() {
 		}
 	);
 
-	module('Kiso.CookieAdapter Tests with Mock Date and Cookie', {
+	module('kiso.ui.CookieAdapter Tests with Mock Date and Cookie', {
 		setup: function() {
 			this.testMockCookieAdapter = new MockCookieAdapter();
 		  this.origDateGetTime = Date.prototype.getTime;
@@ -82,10 +82,10 @@ UnitTest.testCookieAdapter = function() {
 		equal(mockDocumentCookie.substr(0,expStr.length), expStr);
 	});
 	
-	module('Kiso.CookieAdapter Browser Tests');
+	module('kiso.ui.CookieAdapter Browser Tests');
 
 	test('Set and Clear', function() {
-		var cookieAdapter = new Kiso.CookieAdapter();
+		var cookieAdapter = new kiso.ui.CookieAdapter();
 		cookieAdapter.setCookie('Temp', 'Short', 1);
 		cookieAdapter.clearCookie('Temp');
 		expect(1);
