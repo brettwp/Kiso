@@ -61,4 +61,22 @@ unittest.geom.testSimplePolyConvexHull = function() {
 		expect(1);
 		deepEqual(hull.getHullIndexes(), [5,4,0,1,5], '4&2 popped from head and 5 pushed');
 	});
+
+	test('6 point hull reverse direction', function() {
+		var hull = new kiso.geom.SimplePolyConvexHull(
+			[
+				new kiso.geom.Point(2, 0),
+				new kiso.geom.Point(1, 1),
+				new kiso.geom.Point(0, 0),
+				new kiso.geom.Point(1, 0.5),
+				new kiso.geom.Point(1, -1),
+				new kiso.geom.Point(-2, -1),
+			],
+			kiso.geom.SimplePolyConvexHull.LAST2FIRST
+		);
+		hull.build();
+		
+		expect(1);
+		deepEqual(hull.getHullIndexes(), [0,1,5,4,0]);
+	});
 };

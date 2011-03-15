@@ -24,4 +24,21 @@ unittest.geom.testPoint = function() {
 		expect(1);
 		ok(testPoint1.equals(testPoint2));
 	});
+	
+	test('Distance between points', function() {
+		var testPoint1 = new kiso.geom.Point(2, 3);
+		var testPoint2 = new kiso.geom.Point(5, 7);
+		expect(2);
+		equals(testPoint1.distanceTo(testPoint2), 5);
+		equals(testPoint1.distanceSquaredTo(testPoint2), 25);
+	});
+	
+	test('Slope between points', function() {
+		var testPoint1 = new kiso.geom.Point(2, 3);
+		var testPoint2 = new kiso.geom.Point(2, 7);
+		var testPoint3 = new kiso.geom.Point(5, 7);
+		expect(2);
+		equals(testPoint1.slopeTo(testPoint2), Infinity);
+		equals(testPoint1.slopeTo(testPoint3), 4/3);
+	});
 };

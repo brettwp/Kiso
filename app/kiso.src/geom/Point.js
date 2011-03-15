@@ -34,5 +34,17 @@ kiso.geom.Point = kiso.Class({
 			(point0._x - this._x)*(point1._y - this._y) >= 
 				(point1._x - this._x)*(point0._y - this._y)
 		);
+	},
+	
+	distanceSquaredTo: function(point) {
+		return (point._x - this._x)*(point._x - this._x) + (point._y - this._y)*(point._y - this._y);
+	},
+	
+	distanceTo: function(point) {
+		return Math.sqrt(this.distanceSquaredTo(point));
+	},
+	
+	slopeTo: function(point) {
+		return (point._y - this._y)/(point._x - this._x);
 	}
 });

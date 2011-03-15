@@ -1,4 +1,4 @@
-kiso.data.ITree = new kiso.Interface([
+kiso.data.ITree = kiso.Interface([
 	'addChild',
 	'getChild',
 	'getChildCount',

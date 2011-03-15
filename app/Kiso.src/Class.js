@@ -83,19 +83,19 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
   function extendClassInterfaces(newClass, interfaces) {
     if (interfaces) {
       interfaces = (interfaces instanceof Array) ? interfaces : [interfaces];
-      newClass._interfaces = newClass._interfaces || [];
+      newClass.__interfaces = newClass.__interfaces || [];
       for (var index in interfaces) {
-        newClass._interfaces.push(interfaces[index]);
+        newClass.__interfaces.push(interfaces[index]);
       }
     }
   }
 
   function ensureImplementsInterfaces(testClass) {
-    if (testClass._interfaces) {
+    if (testClass.__interfaces) {
 			var index;
       var methods = [];
-      for (index in testClass._interfaces) {
-        methods = methods.concat(testClass._interfaces[index].getMethods());
+      for (index in testClass.__interfaces) {
+        methods = methods.concat(testClass.__interfaces[index].getMethods());
       }
       for (index in methods) {
         if (typeof testClass.prototype[methods[index]] != 'function') {
