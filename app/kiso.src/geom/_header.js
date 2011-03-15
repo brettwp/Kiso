@@ -1,2 +1,2 @@
 /** @namespace */
-unittest.ui = {};
+kiso.geom = {};

@@ -3,6 +3,7 @@
  * Copyright 2010 Brett Pontarelli
  * Licensed under the MIT License.
  */
+/** @namespace */
 this.unittest = this.unittest || {};
 unittest.testClass = function() {
 	module('Kiso.Class Tests');
@@ -272,7 +273,67 @@ unittest.testInterface = function() {
     deepEqual(extendedInterface.getMethods(), ['foo', 'bar', 'baz', 'tim']);
   });
 };
+/** @namespace */
 unittest.data = {};
+unittest.data.testDoubleEndedQueue = function() {
+	module('kiso.data.DoubleEndedQueue Tests');
+
+	test('New Deque is empty', function() {
+		var deque = new kiso.data.DoubleEndedQueue();
+		expect(1);
+		ok(deque.isEmpty());
+	});
+	
+	test('Push/pop head and tail', function() {
+		var deque1 = new kiso.data.DoubleEndedQueue();
+		deque1.pushHead(5);
+		deque1.pushHead(3);
+		deque1.pushHead(4);
+		var deque2 = new kiso.data.DoubleEndedQueue();
+		deque2.pushTail(2);
+		deque2.pushTail(0);
+		deque2.pushTail(1);
+		expect(8);
+		equal(deque1.popTail(),5);
+		equal(deque1.popTail(),3);
+		equal(deque1.popHead(),4);
+		ok(deque1.isEmpty());
+		equal(deque2.popHead(),2);
+		equal(deque2.popHead(),0);
+		equal(deque2.popTail(),1);
+		ok(deque2.isEmpty());		
+	});
+};
+unittest.data.testIndexedDoubleEndedQueue = function() {
+	module('kiso.data.IndexedDoubleEndedQueue Tests');
+
+	test('Get indexed head/tail data', function() {
+		var deque = new kiso.data.IndexedDoubleEndedQueue();
+		deque.pushHead(5);
+		deque.pushHead(3);
+		deque.pushHead(4);
+		deque.pushTail(2);
+		deque.pushTail(0);
+		deque.pushTail(1);
+		expect(4);
+		equal(deque.getHeadData(0), 4);
+		equal(deque.getHeadData(3), 2);
+		equal(deque.getTailData(0), 1);
+		equal(deque.getTailData(3), 5);
+	});
+	
+	test('Convert to array', function() {
+		var deque = new kiso.data.IndexedDoubleEndedQueue();
+		deque.pushHead(5);
+		deque.pushHead(3);
+		deque.pushHead(4);
+		deque.pushTail(2);
+		deque.pushTail(0);
+		deque.pushTail(1);
+		expect(1);
+		deepEqual(deque.toArray(), [1, 0, 2, 5, 3, 4]);
+	});
+};
 unittest.data.testTree = function() {
 	module('kiso.data.Tree Tests');
 
@@ -363,6 +424,100 @@ unittest.data.testTree = function() {
 		ok(testNode.isEmpty());
 	});
 };
+/** @namespace */
+unittest.geom = {};
+unittest.geom.testPoint = function() {
+	module('kiso.geom.Point Tests');
+
+	test('Point Constructor', function() {
+		var testPoint1 = new kiso.geom.Point();
+		var testPoint2 = new kiso.geom.Point(2,3);
+		var testPoint3 = new kiso.geom.Point(testPoint2);
+		expect(3);
+		ok(testPoint1.getX() == 0 && testPoint1.getY() == 0);
+		ok(testPoint2.getX() == 2 && testPoint2.getY() == 3);
+		ok(testPoint3.getX() == 2 && testPoint3.getY() == 3);
+	});
+
+	test('Getters & Setters', function() {
+		var testPoint = new kiso.geom.Point();
+		testPoint.setXY(4,5);
+		expect(1);
+		ok(testPoint.getX() == 4 && testPoint.getY() == 5);
+	});
+	
+	test('Equal points', function() {
+		var testPoint1 = new kiso.geom.Point(4, 5);
+		var testPoint2 = new kiso.geom.Point(4, 5);
+		expect(1);
+		ok(testPoint1.equals(testPoint2));
+	});
+};
+unittest.geom.testSimplePolyConvexHull = function() {
+	module('kiso.geom.SimplePolyConvexHull Tests');
+
+	test('3 point hull', function() {
+		var hull1 = new kiso.geom.SimplePolyConvexHull([
+			new kiso.geom.Point(2, 0),
+			new kiso.geom.Point(1, 1),
+			new kiso.geom.Point(0, 0)
+		]);
+		hull1.build();
+		var hull2 = new kiso.geom.SimplePolyConvexHull([
+			new kiso.geom.Point(2, 0),
+			new kiso.geom.Point(1, -1),
+			new kiso.geom.Point(0, 0)
+		]);
+		hull2.build();
+		
+		expect(2);
+		deepEqual(hull1.getHullIndexes(), [2,0,1,2], 'CCW since v2 is left of v0v1');
+		deepEqual(hull2.getHullIndexes(), [2,1,0,2], 'CCW sincev2 is right of v0v1');
+	});
+	
+	test('4 point hull w/ v3 inside triangle v0v1v2', function() {
+		var hull = new kiso.geom.SimplePolyConvexHull([
+			new kiso.geom.Point(2, 0),
+			new kiso.geom.Point(1, 1),
+			new kiso.geom.Point(0, 0),
+			new kiso.geom.Point(1, 0.5)
+		]);
+		hull.build();
+		
+		expect(1);
+		deepEqual(hull.getHullIndexes(), [2,0,1,2]);
+	});
+
+	test('5 point hull w/ v4 outside triangle v0v1v2', function() {
+		var hull = new kiso.geom.SimplePolyConvexHull([
+			new kiso.geom.Point(2, 0),
+			new kiso.geom.Point(1, 1),
+			new kiso.geom.Point(0, 0),
+			new kiso.geom.Point(1, 0.5),
+			new kiso.geom.Point(1, -1)
+		]);
+		hull.build();
+		
+		expect(1);
+		deepEqual(hull.getHullIndexes(), [4,0,1,2,4], '2 popped from tail and 4 pushed');
+	});
+
+	test('6 point hull w/ v5 outside triangle v0v1v2', function() {
+		var hull = new kiso.geom.SimplePolyConvexHull([
+			new kiso.geom.Point(2, 0),
+			new kiso.geom.Point(1, 1),
+			new kiso.geom.Point(0, 0),
+			new kiso.geom.Point(1, 0.5),
+			new kiso.geom.Point(1, -1),
+			new kiso.geom.Point(-2, -1),
+		]);
+		hull.build();
+		
+		expect(1);
+		deepEqual(hull.getHullIndexes(), [5,4,0,1,5], '4&2 popped from head and 5 pushed');
+	});
+};
+/** @namespace */
 unittest.ui = {};
 unittest.ui.testCookieAdapter = function() {
 	var mockDocumentCookie;

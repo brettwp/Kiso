@@ -12,6 +12,8 @@
 			<fileset dir="${Kiso.dir}/${Kiso.file}.src" includes="*.js" excludes="_header.js"/>
 			<filelist dir="${Kiso.dir}/${Kiso.file}.src/data" files="_header.js"/>
       <fileset dir="${Kiso.dir}/${Kiso.file}.src/data" includes="*.js" excludes="_header.js"/>
+			<filelist dir="${Kiso.dir}/${Kiso.file}.src/geom" files="_header.js"/>
+      <fileset dir="${Kiso.dir}/${Kiso.file}.src/geom" includes="*.js" excludes="_header.js"/>
 			<filelist dir="${Kiso.dir}/${Kiso.file}.src/ui" files="_header.js"/>
       <fileset dir="${Kiso.dir}/${Kiso.file}.src/ui" includes="*.js" excludes="_header.js"/>
     </concat>
@@ -25,6 +27,8 @@
       <fileset dir="${testKiso.dir}/${testKiso.file}.src" includes="*.js" excludes="_header.js"/>
 			<filelist dir="${testKiso.dir}/${testKiso.file}.src/data" files="_header.js"/>
       <fileset dir="${testKiso.dir}/${testKiso.file}.src/data" includes="*.js" excludes="_header.js"/>
+			<filelist dir="${testKiso.dir}/${testKiso.file}.src/geom" files="_header.js"/>
+      <fileset dir="${testKiso.dir}/${testKiso.file}.src/geom" includes="*.js" excludes="_header.js"/>
 			<filelist dir="${testKiso.dir}/${testKiso.file}.src/ui" files="_header.js"/>
       <fileset dir="${testKiso.dir}/${testKiso.file}.src/ui" includes="*.js" excludes="_header.js"/>
     </concat>
