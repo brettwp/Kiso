@@ -1,10 +1,28 @@
 unittest.data.testDeque = function() {
 	module('kiso.data.Deque Tests');
 
-	test('New Deque is empty', function() {
+	test('List size equals number of elements', function() {
 		var deque = new kiso.data.Deque();
+		for (var i=0; i<10; i++) deque.pushHead(0);
 		expect(1);
-		ok(deque.isEmpty());
+		equal(deque.getSize(), 10);
+	});
+	
+	test('Pop on empty list throws error', function() {
+		var deque = new kiso.data.Deque();
+		var errorsThrown = 0;
+		try {
+			deque.popHead();
+		} catch(e) {
+			errorsThrown++;
+		}
+		try {
+			deque.popTail();
+		} catch(e) {
+			errorsThrown++;
+		}
+		expect(1);
+		equal(errorsThrown, 2);
 	});
 	
 	test('Push/pop head and tail', function() {

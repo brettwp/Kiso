@@ -41,4 +41,13 @@ unittest.geom.testPoint = function() {
 		equals(testPoint1.slopeTo(testPoint2), Infinity);
 		equals(testPoint1.slopeTo(testPoint3), 4/3);
 	});
+	
+	test('Distance from point to line', function() {
+		var testPoint1 = new kiso.geom.Point(1, 0);
+		var testPoint2 = new kiso.geom.Point(0, 0);
+		var testPoint3 = new kiso.geom.Point(1, 1);
+		expect(2);
+		ok(testPoint1.distanceToLine(testPoint2, testPoint3) - Math.SQRT2/2 < 1e-6);
+		equals(testPoint1.unscaledDistanceToLine(testPoint2, testPoint3), 1);
+	});
 };

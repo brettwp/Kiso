@@ -217,8 +217,7 @@ unittest.testClass = function() {
           bar: function() { return 'bar'; }
         }
       );
-    }
-    catch(e) {
+    } catch(e) {
       errorThrown = true;
       errorMsg = 'Error Thrown with message: ' + e.message;
     }

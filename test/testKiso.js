@@ -224,8 +224,7 @@ unittest.testClass = function() {
           bar: function() { return 'bar'; }
         }
       );
-    }
-    catch(e) {
+    } catch(e) {
       errorThrown = true;
       errorMsg = 'Error Thrown with message: ' + e.message;
     }
@@ -275,21 +274,60 @@ unittest.testInterface = function() {
 };
 /** @namespace */
 unittest.data = {};
-unittest.data.testDoubleEndedQueue = function() {
-	module('kiso.data.DoubleEndedQueue Tests');
+unittest.data.testAbstractList = function() {
+	module('kiso.data.AbstractList Tests');
 
-	test('New Deque is empty', function() {
-		var deque = new kiso.data.DoubleEndedQueue();
+	test('New list is empty', function() {
+		var list = new kiso.data.AbstractList();
 		expect(1);
-		ok(deque.isEmpty());
+		ok(list.isEmpty());
+	});
+
+	test('New list size zero', function() {
+		var list = new kiso.data.AbstractList();
+		expect(1);
+		equals(list.getSize(), 0);
+	});
+	
+	test('New list array form is null', function() {
+		var list = new kiso.data.AbstractList();
+		expect(1);
+		equals(list.toArray(), 0);
+	});
+};
+unittest.data.testDeque = function() {
+	module('kiso.data.Deque Tests');
+
+	test('List size equals number of elements', function() {
+		var deque = new kiso.data.Deque();
+		for (var i=0; i<10; i++) deque.pushHead(0);
+		expect(1);
+		equal(deque.getSize(), 10);
+	});
+	
+	test('Pop on empty list throws error', function() {
+		var deque = new kiso.data.Deque();
+		var errorsThrown = 0;
+		try {
+			deque.popHead();
+		} catch(e) {
+			errorsThrown++;
+		}
+		try {
+			deque.popTail();
+		} catch(e) {
+			errorsThrown++;
+		}
+		expect(1);
+		equal(errorsThrown, 2);
 	});
 	
 	test('Push/pop head and tail', function() {
-		var deque1 = new kiso.data.DoubleEndedQueue();
+		var deque1 = new kiso.data.Deque();
 		deque1.pushHead(5);
 		deque1.pushHead(3);
 		deque1.pushHead(4);
-		var deque2 = new kiso.data.DoubleEndedQueue();
+		var deque2 = new kiso.data.Deque();
 		deque2.pushTail(2);
 		deque2.pushTail(0);
 		deque2.pushTail(1);
@@ -303,12 +341,9 @@ unittest.data.testDoubleEndedQueue = function() {
 		equal(deque2.popTail(),1);
 		ok(deque2.isEmpty());		
 	});
-};
-unittest.data.testIndexedDoubleEndedQueue = function() {
-	module('kiso.data.IndexedDoubleEndedQueue Tests');
 
 	test('Get indexed head/tail data', function() {
-		var deque = new kiso.data.IndexedDoubleEndedQueue();
+		var deque = new kiso.data.Deque();
 		deque.pushHead(5);
 		deque.pushHead(3);
 		deque.pushHead(4);
@@ -323,7 +358,7 @@ unittest.data.testIndexedDoubleEndedQueue = function() {
 	});
 	
 	test('Convert to array', function() {
-		var deque = new kiso.data.IndexedDoubleEndedQueue();
+		var deque = new kiso.data.Deque();
 		deque.pushHead(5);
 		deque.pushHead(3);
 		deque.pushHead(4);
@@ -332,6 +367,103 @@ unittest.data.testIndexedDoubleEndedQueue = function() {
 		deque.pushTail(1);
 		expect(1);
 		deepEqual(deque.toArray(), [1, 0, 2, 5, 3, 4]);
+	});
+};
+unittest.data.testLinkedList = function() {
+	module('kiso.data.LinkedList Tests');
+
+	test('List size equals number of elements', function() {
+		var list = new kiso.data.LinkedList();
+		for (var i=0; i<10; i++) list.addFirst(0);
+		expect(1);
+		equal(list.getSize(), 10);
+	});
+	
+	test('Pop on empty list throws error', function() {
+		var list = new kiso.data.LinkedList();
+		var errorsThrown = 0;
+		try {
+			list.removeFirst();
+		} catch(e) {
+			errorsThrown++;
+		}
+		try {
+			list.removeLast();
+		} catch(e) {
+			errorsThrown++;
+		}
+		expect(1);
+		equal(errorsThrown, 2);
+	});
+		
+	test('Insert/remove first and last', function() {
+		var list1 = new kiso.data.LinkedList();
+		list1.addFirst(5);
+		list1.addFirst(3);
+		list1.addFirst(4);
+		var list2 = new kiso.data.LinkedList();
+		list2.addLast(2);
+		list2.addLast(0);
+		list2.addLast(1);
+		expect(8);
+		equal(list1.removeLast(),5);
+		equal(list1.removeLast(),3);
+		equal(list1.removeFirst(),4);
+		ok(list1.isEmpty());
+		equal(list2.removeFirst(),2);
+		equal(list2.removeFirst(),0);
+		equal(list2.removeLast(),1);
+		ok(list2.isEmpty());		
+	});
+	
+	test('Insert before/after and remove', function() {
+		var list1 = new kiso.data.LinkedList();
+		list1.addFirst(2);
+		list1.addAfter(0,5);
+		list1.addAfter(1,3);
+		list1.addAfter(2,4);
+		var list2 = new kiso.data.LinkedList();
+		list2.addLast(2);
+		list2.addBefore(0,5);
+		list2.addBefore(1,3);
+		list2.addBefore(2,4);
+		expect(10);
+		equal(list1.remove(1),5);
+		equal(list1.remove(2),4);
+		equal(list1.remove(0),2);
+		equal(list1.remove(0),3);
+		ok(list1.isEmpty());
+		equal(list2.remove(3),2);
+		equal(list2.remove(1),3);
+		equal(list2.remove(1),4);
+		equal(list2.remove(0),5);
+		ok(list2.isEmpty());		
+	});
+
+	test('Get indexed data', function() {
+		var list = new kiso.data.LinkedList();
+		list.addFirst(5);
+		list.addFirst(3);
+		list.addFirst(4);
+		list.addLast(2);
+		list.addLast(0);
+		list.addLast(1);
+		var listArray = [];
+		for (var i=0; i<6; i++) listArray.push(list.getData(i));
+		expect(1);
+		deepEqual(listArray, [4,3,5,2,0,1]);
+	});
+	
+	test('Convert to array', function() {
+		var list = new kiso.data.LinkedList();
+		list.addFirst(5);
+		list.addFirst(3);
+		list.addFirst(4);
+		list.addLast(2);
+		list.addLast(0);
+		list.addLast(1);
+		expect(1);
+		deepEqual(list.toArray(), [4,3,5,2,0,1]);
 	});
 };
 unittest.data.testTree = function() {
@@ -469,6 +601,15 @@ unittest.geom.testPoint = function() {
 		equals(testPoint1.slopeTo(testPoint2), Infinity);
 		equals(testPoint1.slopeTo(testPoint3), 4/3);
 	});
+	
+	test('Distance from point to line', function() {
+		var testPoint1 = new kiso.geom.Point(1, 0);
+		var testPoint2 = new kiso.geom.Point(0, 0);
+		var testPoint3 = new kiso.geom.Point(1, 1);
+		expect(2);
+		ok(testPoint1.distanceToLine(testPoint2, testPoint3) - Math.SQRT2/2 < 1e-6);
+		equals(testPoint1.unscaledDistanceToLine(testPoint2, testPoint3), 1);
+	});
 };
 unittest.geom.testSimplePolyConvexHull = function() {
 	module('kiso.geom.SimplePolyConvexHull Tests');
@@ -561,14 +702,14 @@ unittest.geom.testSimplePolyConvexHullWithOperationStack = function() {
 		new kiso.geom.Point(1, -1),
 		new kiso.geom.Point(-2, -1),
 	];
-	var POP_OPERATION_AT_HEAD = kiso.geom.SimplePolyConvexHullWithOperationStack._POP_OPERATION_AT_HEAD
-	var POP_OPERATION_AT_TAIL = kiso.geom.SimplePolyConvexHullWithOperationStack._POP_OPERATION_AT_TAIL
-	var PUSH_OPERATION = kiso.geom.SimplePolyConvexHullWithOperationStack._PUSH_OPERATION
+	var POP_OPERATION_AT_HEAD = kiso.geom.ReduceableSimplePolyConvexHull._POP_OPERATION_AT_HEAD
+	var POP_OPERATION_AT_TAIL = kiso.geom.ReduceableSimplePolyConvexHull._POP_OPERATION_AT_TAIL
+	var PUSH_OPERATION = kiso.geom.ReduceableSimplePolyConvexHull._PUSH_OPERATION
 
 	module('kiso.geom.SimplePolyConvexHullWithOperationStack Tests');
 	
 	test('6 point hull', function() {
-		var hull = new kiso.geom.SimplePolyConvexHullWithOperationStack(testPoints);
+		var hull = new kiso.geom.ReduceableSimplePolyConvexHull(testPoints);
 		hull.build();
 		
 		expect(1);
@@ -585,7 +726,7 @@ unittest.geom.testSimplePolyConvexHullWithOperationStack = function() {
 	});
 
 	test('6 point hull reverse directionWithOperationStack', function() {
-		var hull = new kiso.geom.SimplePolyConvexHullWithOperationStack(
+		var hull = new kiso.geom.ReduceableSimplePolyConvexHull(
 			testPoints,
 			kiso.geom.SimplePolyConvexHull.LAST2FIRST
 		);

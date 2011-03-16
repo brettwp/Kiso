@@ -51,7 +51,7 @@ kiso.data.AbstractList = kiso.Class({
 		node._prev._next = node._next;
 		node._next._prev = node._prev;
 		this._size--;
-		return node.data;
+		return node._data;
 	},
 	
 	_getNode: function(index) {

@@ -152,67 +152,140 @@ kiso.Interface = function(parentInterface, methods) {
 };
 /** @namespace */
 kiso.data = {};
-kiso.data.DoubleEndedQueue = kiso.Class({
-	_head: null,
-	_tail: null,
+kiso.data.AbstractList = kiso.Class({
+	_last: null,
+	_first: null,
+	_size: 0,
 	
 	initialize: function() {
-		this._head = this._newNode();
-		this._tail = this._newNode();
-		this._head._prev = this._tail;
-		this._tail._next = this._head;
+		this._last = this._newNode();
+		this._first = this._newNode();
+		this._last._prev = this._first;
+		this._first._next = this._last;
+		this._size = 0;
 	},
 	
-	pushHead: function(data) {
-		var node = this._newNode(data);
-		node._prev = this._head._prev;
-		node._next = this._head;
-		this._head._prev._next = node;
-		this._head._prev = node;
+	getSize: function() {
+		return this._size;
+	},
+	
+	isEmpty: function() {
+		return (this._size == 0);
+	},
+	
+	toArray: function() {
+		var arrayOut = new Array();
+		var node = this._first._next;
+		while (node != this._last) {
+			arrayOut.push(node._data);
+			node = node._next;
+		}
+		return arrayOut;
+	},
+	
+	_insertBefore: function(node, data) {
+		var newNode = this._newNode(data);
+		newNode._prev = node._prev;
+		node._prev = newNode;
+		newNode._next = node;
+		newNode._prev._next = newNode;
+		this._size++;		
+	},
+	
+	_insertAfter: function(node, data) {
+		var newNode = this._newNode(data);
+		newNode._next = node._next;
+		node._next = newNode;
+		newNode._prev = node;
+		newNode._next._prev = newNode;
+		this._size++;
+	},
+	
+	_removeNode: function(node) {
+		node._prev._next = node._next;
+		node._next._prev = node._prev;
+		this._size--;
+		return node._data;
+	},
+	
+	_getNode: function(index) {
+		if (index < 0 || index >= this._size) {
+			throw new Error('Index out of bounds.');
+		}
+		var direction = (index*2 > this._size) ? -1 : 1;
+		var node = (direction == 1) ? this._first._next : this._last._prev;
+		var offset = (direction == 1) ? index : (this._size - index - 1);
+		while (offset > 0) {
+			node = (direction == 1) ? node._next : node._prev;
+			offset--;
+		}
+		return node;
 	},
 
-	pushTail: function(data) {
-		var node = this._newNode(data);
-		node._prev = this._tail;
-		node._next = this._tail._next;
-		this._tail._next._prev = node;
-		this._tail._next = node;
-	},
-	
 	_newNode: function(nodeData) {
 		return {
 			_data: nodeData,
 			_next: null,
 			_prev: null
 		};
-	},
-	
-	popHead: function() {
-		if (this.isEmpty()) {
-			throw new Error('Cannot popHead on empty DoubleEndedQueue');
-		} else {
-			var node = this._head._prev;
-			node._prev._next = this._head;
-			this._head._prev = node._prev;
-			return node._data;
-		}
-	},
-	
-	popTail: function() {
-		if (this.isEmpty()) {
-			throw new Error('Cannot popTail on empty DoubleEndedQueue');
-		} else {
-			var node = this._tail._next;
-			node._next._prev = this._tail;
-			this._tail._next = node._next;
-			return node._data;	
-		}
-	},
-	
-	isEmpty: function() {
-		return (this._tail._next == this._head);
 	}
-});kiso.data.ITree = kiso.Interface([
+});
+kiso.data.Deque = kiso.Class(
+	{
+		parent: kiso.data.AbstractList,
+		interfaces: kiso.data.IDeque
+	},
+	{
+		pushHead: function(data) {
+			this._insertBefore(this._last, data);
+		},
+
+		pushTail: function(data) {
+			this._insertAfter(this._first, data);
+		},
+
+		popHead: function() {
+			if (this.isEmpty()) {
+				throw new Error('Cannot pop head on empty Deque');
+			}
+			return this._removeNode(this._last._prev);
+		},
+
+		popTail: function() {
+			if (this.isEmpty()) {
+				throw new Error('Cannot pop tail on empty Deque');
+			}
+			return this._removeNode(this._first._next);
+		},
+
+		getHeadData: function(index) {
+			return this._getNode(this._size-index-1)._data;
+		},
+
+		getTailData: function(index) {
+			return this._getNode(index)._data;
+		}
+	}
+);
+kiso.data.IDeque = kiso.Interface([
+	'pushHead',
+	'pushTail',
+	'popHead',
+	'popTail',
+	'getHeadData',
+	'getTailData'
+]);
+kiso.data.ILinkedList = kiso.Interface([
+	'addFirst',
+	'addLast',
+	'addBefore',
+	'addAfter',
+	'remove',
+	'removeFirst',
+	'removeLast',
+	'getData'
+]);
+kiso.data.ITree = kiso.Interface([
 	'addChild',
 	'getChild',
 	'getChildCount',
@@ -225,48 +298,48 @@ kiso.data.DoubleEndedQueue = kiso.Class({
 	'isRoot',
 	'isEmpty'
 ]);
-kiso.data.IndexedDoubleEndedQueue = kiso.Class(
-	kiso.data.DoubleEndedQueue,
+kiso.data.LinkedList = kiso.Class(
 	{
-		_nodeCursor: null,
-		
-		getHeadData: function(index) {
+		parent: kiso.data.AbstractList,
+		interfaces: kiso.data.ILinkedList
+	},
+	{
+		addFirst: function(data) {
+			this._insertAfter(this._first, data);
+		},
+
+		addLast: function(data) {
+			this._insertBefore(this._last, data);
+		},
+
+		addBefore: function(index, data) {
+			this._insertBefore(this._getNode(index), data);
+		},
+
+		addAfter: function(index, data) {
+			this._insertAfter(this._getNode(index), data);
+		},
+
+		remove: function(index) {
+			return this._removeNode(this._getNode(index));
+		},
+
+		removeFirst: function() {
 			if (this.isEmpty()) {
-				return null;
-			} else {
-				return this._getIndexedData(index, -1);
+				throw new Error('Cannot remove first from empty LinkedList');
 			}
+			return this._removeNode(this._first._next);
 		},
-		
-		getTailData: function(index) {
+
+		removeLast: function() {
 			if (this.isEmpty()) {
-				return null;
-			} else {
-				return this._getIndexedData(index, 1);
+				throw new Error('Cannot remove last from empty LinkedList');
 			}
+			return this._removeNode(this._last._prev);
 		},
-		
-		_getIndexedData: function(index, direction) {
-			var node = (direction == 1) ? this._tail._next : this._head._prev;
-			while (index > 0 && node != null) {
-				node = (direction == 1) ? node._next : node._prev;
-				index--;
-			}
-			if (node == null || node == this._tail) {
-				return null;
-			} else {
-				return node._data;
-			}
-		},
-		
-		toArray: function() {
-			var arrayOut = new Array();
-			var node = this._tail._next;
-			while (node != this._head) {
-				arrayOut.push(node._data);
-				node = node._next;
-			}
-			return arrayOut;
+
+		getData: function(index) {
+			return this._getNode(index)._data;
 		}
 	}
 );
@@ -407,8 +480,65 @@ kiso.geom.Point = kiso.Class({
 	
 	slopeTo: function(point) {
 		return (point._y - this._y)/(point._x - this._x);
+	},
+	
+	distanceToLine: function(point0, point1) {
+		var lineLength = point0.distanceTo(point1);
+		return (lineLength == 0) ? 
+			this.distanceTo(point0) :
+			this.unscaledDistanceToLine(point0, point1)/lineLength;
+	},
+	
+	unscaledDistanceToLine: function(point0, point1) {
+		return Math.abs(
+			(point1._x - point0._x)*(point0._y - this._y) - 
+			(point0._x - this._x)*(point1._y - point0._y)
+		);
 	}
-});kiso.geom.SimplePolyConvexHull = kiso.Class(
+});kiso.geom.ReduceableSimplePolyConvexHull = kiso.Class(
+	{
+		parent: kiso.geom.SimplePolyConvexHull,
+		constants: {
+			_POP_OPERATION_AT_HEAD: 10,
+			_POP_OPERATION_AT_TAIL: 11,
+			_PUSH_OPERATION: 12
+		}
+	},
+	{
+		_operationStack: [],
+		
+		build: function() {
+			this._operationStack = [];
+			this.superclass.build();
+		},
+		
+		getOperationStack: function() {
+			return this._operationStack;
+		},
+		
+		reduceTo: function(endPointIndex) {
+			// @TODO
+		},
+		
+		_popHullPoint: function(atEnd) {
+			this._operationStack.push({
+				index: this.superclass._popHullPoint(atEnd),
+				operation: 
+					(atEnd == kiso.geom.ReduceableSimplePolyConvexHull._AT_HEAD) ?
+					kiso.geom.ReduceableSimplePolyConvexHull._POP_OPERATION_AT_HEAD :
+					kiso.geom.ReduceableSimplePolyConvexHull._POP_OPERATION_AT_TAIL
+			});
+		},
+		
+		_pushHullPoint: function(index) {
+			this.superclass._pushHullPoint(index);
+			this._operationStack.push({
+				index: index,
+				operation: kiso.geom.ReduceableSimplePolyConvexHull._PUSH_OPERATION
+			});
+		}
+	}
+);kiso.geom.SimplePolyConvexHull = kiso.Class(
 	{
 		interfaces: kiso.geom.IConvexHull,
 		constants: {
@@ -451,7 +581,7 @@ kiso.geom.Point = kiso.Class({
 		},
 		
 		_initializeHullIndexes: function() {
-			this._hullIndexes = new kiso.data.IndexedDoubleEndedQueue();
+			this._hullIndexes = new kiso.data.Deque();
 			var indexes, point0, point1, point2;
 			if (this._direction == kiso.geom.SimplePolyConvexHull.LAST2FIRST) {
 				point0 = this._simplePoly.length-1;
@@ -527,50 +657,61 @@ kiso.geom.Point = kiso.Class({
 		}
 	}
 );
-kiso.geom.SimplePolyConvexHullWithOperationStack = kiso.Class(
+kiso.geom.SimplePolySimplify = kiso.Class(
 	{
-		parent: kiso.geom.SimplePolyConvexHull,
-		constants: {
-			_POP_OPERATION_AT_HEAD: 10,
-			_POP_OPERATION_AT_TAIL: 11,
-			_PUSH_OPERATION: 12
-		}
+		interfaces: kiso.geom.IPolyReduce
 	},
 	{
-		_operationStack: [],
+		_simplePoly: null,
+		_subSections: null,
+		_stopTolerance: null,
+		_currentTolerance: null,
 		
-		build: function() {
-			this._operationStack = [];
-			this.superclass.build();
+		initialize: function(simplePoly) {
+			this.setPoints(simplePoly);
 		},
 		
-		getOperationStack: function() {
-			return this._operationStack;
+		setPoints: function(simplePoly) {
+			this._simplePoly = simplePoly;
+			this._subSection = [{
+					firstPoint: 0,
+					lastPoint: simplePoly.length-1,
+					farthestPoint: null,
+					firstToLastHull: new kiso.geom.ReduceableSimplePolyConvexHull(simplePoly),
+					lastToFirstHull: new kiso.geom.ReduceableSimplePolyConvexHull(
+						simplePoly,
+						kiso.geom.ReduceableSimplePolyConvexHull.LAST2FIRST
+					)
+			}];
+			this._currentTolerance = null;
 		},
 		
-		getReducedHull: function(endPointIndex) {
-			
+		simplify: function() {
+			while (this._currentTolerance > this._stopTolerance) {
+				this.simplifyOnce();
+			}
 		},
 		
-		_popHullPoint: function(atEnd) {
-			this._operationStack.push({
-				index: this.superclass._popHullPoint(atEnd),
-				operation: 
-					(atEnd == kiso.geom.SimplePolyConvexHull._AT_HEAD) ?
-					kiso.geom.SimplePolyConvexHullWithOperationStack._POP_OPERATION_AT_HEAD :
-					kiso.geom.SimplePolyConvexHullWithOperationStack._POP_OPERATION_AT_TAIL
-			});
+		simplifyOnce: function() {
+			for (var i=0; i<this._subSection.length-1; i++) {
+				this._simplifySection
+			}
 		},
 		
-		_pushHullPoint: function(index) {
-			this._operationStack.push({
-				index: index,
-				operation: kiso.geom.SimplePolyConvexHullWithOperationStack._PUSH_OPERATION
-			});
-			this.superclass._pushHullPoint(index);
+		setStopTolerance: function(tolerance) {
+			this._stopTolerance = tolerance;
+		},
+		
+		getStopTolerance: function() {
+			return this._stopTolerance;
+		},
+		
+		getCurrentTolerance: function() {
+			return this._getCurrentTolerance;
 		}
 	}
-);/** @namespace */
+);
+/** @namespace */
 kiso.ui = {};kiso.ui.CookieAdapter = kiso.Class({
 	_MS_PER_DAY: 60 * 60 * 24 * 1000,
 
