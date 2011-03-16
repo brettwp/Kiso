@@ -46,5 +46,19 @@ kiso.geom.Point = kiso.Class({
 	
 	slopeTo: function(point) {
 		return (point._y - this._y)/(point._x - this._x);
+	},
+	
+	distanceToLine: function(point0, point1) {
+		var lineLength = point0.distanceTo(point1);
+		return (lineLength == 0) ? 
+			this.distanceTo(point0) :
+			this.unscaledDistanceToLine(point0, point1)/lineLength;
+	},
+	
+	unscaledDistanceToLine: function(point0, point1) {
+		return Math.abs(
+			(point1._x - point0._x)*(point0._y - this._y) - 
+			(point0._x - this._x)*(point1._y - point0._y)
+		);
 	}
 });

@@ -41,7 +41,7 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 		},
 		
 		_initializeHullIndexes: function() {
-			this._hullIndexes = new kiso.data.IndexedDoubleEndedQueue();
+			this._hullIndexes = new kiso.data.Deque();
 			var indexes, point0, point1, point2;
 			if (this._direction == kiso.geom.SimplePolyConvexHull.LAST2FIRST) {
 				point0 = this._simplePoly.length-1;

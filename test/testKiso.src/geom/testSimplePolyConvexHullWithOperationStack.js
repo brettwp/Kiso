@@ -7,14 +7,14 @@ unittest.geom.testSimplePolyConvexHullWithOperationStack = function() {
 		new kiso.geom.Point(1, -1),
 		new kiso.geom.Point(-2, -1),
 	];
-	var POP_OPERATION_AT_HEAD = kiso.geom.SimplePolyConvexHullWithOperationStack._POP_OPERATION_AT_HEAD
-	var POP_OPERATION_AT_TAIL = kiso.geom.SimplePolyConvexHullWithOperationStack._POP_OPERATION_AT_TAIL
-	var PUSH_OPERATION = kiso.geom.SimplePolyConvexHullWithOperationStack._PUSH_OPERATION
+	var POP_OPERATION_AT_HEAD = kiso.geom.ReduceableSimplePolyConvexHull._POP_OPERATION_AT_HEAD
+	var POP_OPERATION_AT_TAIL = kiso.geom.ReduceableSimplePolyConvexHull._POP_OPERATION_AT_TAIL
+	var PUSH_OPERATION = kiso.geom.ReduceableSimplePolyConvexHull._PUSH_OPERATION
 
 	module('kiso.geom.SimplePolyConvexHullWithOperationStack Tests');
 	
 	test('6 point hull', function() {
-		var hull = new kiso.geom.SimplePolyConvexHullWithOperationStack(testPoints);
+		var hull = new kiso.geom.ReduceableSimplePolyConvexHull(testPoints);
 		hull.build();
 		
 		expect(1);
@@ -31,7 +31,7 @@ unittest.geom.testSimplePolyConvexHullWithOperationStack = function() {
 	});
 
 	test('6 point hull reverse directionWithOperationStack', function() {
-		var hull = new kiso.geom.SimplePolyConvexHullWithOperationStack(
+		var hull = new kiso.geom.ReduceableSimplePolyConvexHull(
 			testPoints,
 			kiso.geom.SimplePolyConvexHull.LAST2FIRST
 		);

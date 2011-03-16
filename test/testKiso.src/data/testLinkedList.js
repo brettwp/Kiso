@@ -1,8 +1,11 @@
-unittest.data.testIndexedDoubleEndedQueue = function() {
-	module('kiso.data.IndexedDoubleEndedQueue Tests');
+unittest.data.testLinkedList = function() {
+	module('kiso.data.LinkedList Tests');
 
+	/*
+	 * NEEDS TOTAL REWORK
+	 */
 	test('Get indexed head/tail data', function() {
-		var deque = new kiso.data.IndexedDoubleEndedQueue();
+		var deque = new kiso.data.Deque();
 		deque.pushHead(5);
 		deque.pushHead(3);
 		deque.pushHead(4);
@@ -17,7 +20,7 @@ unittest.data.testIndexedDoubleEndedQueue = function() {
 	});
 	
 	test('Convert to array', function() {
-		var deque = new kiso.data.IndexedDoubleEndedQueue();
+		var deque = new kiso.data.Deque();
 		deque.pushHead(5);
 		deque.pushHead(3);
 		deque.pushHead(4);
