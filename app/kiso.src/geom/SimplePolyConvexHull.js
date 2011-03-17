@@ -19,7 +19,12 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 		},
 		
 		setPoints: function(simplePoly) {
-			this._simplePoly = simplePoly;
+			this._simplePoly = simplePoly.map(function(point) { return point.clone(); });
+			this._hullIndexes = null;
+		},
+		
+		getPoints: function() {
+			return this._simplePoly;
 		},
 		
 		setDirection: function(direction) {
@@ -111,9 +116,9 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 			}
 		},
 		
-		_pushHullPoint: function(index) {
-			this._hullIndexes.pushHead(index);
-			this._hullIndexes.pushTail(index);
+		_pushHullPoint: function(index, atEnd) {
+			if (atEnd != kiso.geom.SimplePolyConvexHull._AT_HEAD) this._hullIndexes.pushTail(index);
+			if (atEnd != kiso.geom.SimplePolyConvexHull._AT_TAIL) this._hullIndexes.pushHead(index);
 		}
 	}
 );

@@ -25,6 +25,10 @@ kiso.geom.Point = kiso.Class({
 		return this._y;
 	},
 	
+	clone: function() {
+		return new kiso.geom.Point(this);
+	},
+	
 	equals: function(point) {
 		return (this._x === point._x & this._y === point._y);
 	},

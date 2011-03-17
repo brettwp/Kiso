@@ -57,6 +57,7 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 				__super: parentClass.prototype,
 				__sub: null
 			};
+			setupClassConstants(newClass, parentClass);
 		}
 	}
 	

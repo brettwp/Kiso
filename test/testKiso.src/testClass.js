@@ -153,13 +153,16 @@ unittest.testClass = function() {
         number: 10,
         sayNameAndNumber: function() {
           return this.sayName() + this.number;
-        }
+        },
+				sayName: function() {
+					return 'Name=' + this.superclass.sayName();
+				}
       }
     );
 		var testObj = new childClass();
 		expect(2);
-		equal(testObj.sayName(), 'Brett');
-		equal(testObj.sayNameAndNumber(), 'Brett10');
+		equal(testObj.sayName(), 'Name=Brett');
+		equal(testObj.sayNameAndNumber(), 'Name=Brett10');
 	});
 
   test('Implements single Interface', function() {
@@ -229,23 +232,66 @@ unittest.testClass = function() {
     var testClass = kiso.Class(
       {
         constants: {
-					Backward: -1,
-					DontMove: 0,
-					Forward: 1
+					BACKWARD: -1,
+					DONTMOVE: 0,
+					FORWARD: 1
 				}
       },
       {
         testConst: function() {
-					return (testClass.Backward == -1) &&
-						(testClass.DontMove == 0) && (testClass.Forward == 1);
+					return (testClass.BACKWARD == -1) &&
+						(testClass.DONTMOVE == 0) && (testClass.FORWARD == 1);
+				}
+      }
+    );	
+    var testObj = new testClass();
+		expect(4);
+		equal(testClass.BACKWARD, -1);
+		equal(testClass.DONTMOVE, 0);
+		equal(testClass.FORWARD, 1);
+		ok(testObj.testConst());
+	});
+	
+  test('Class constants and inheritance', function() {
+    var testClass1 = kiso.Class(
+      {
+        constants: {
+					BACKWARD: -1,
+					DONTMOVE: 0,
+					FORWARD: 1
+				}
+      },
+      {
+				_empty: 0,
+				testFunc: function() {
+					return 1;
 				}
       }
     );
-    var testObj = new testClass();
-		expect(4);
-		equal(testClass.Backward, -1);
-		equal(testClass.DontMove, 0);
-		equal(testClass.Forward, 1);
+		var testClass2 = kiso.Class(
+			{
+				parent: testClass1,
+				constants: {
+					UP: 2,
+					DOWN: -2
+				}
+			},
+			{
+				testConst: function() {
+					return (testClass2.BACKWARD == -1) &&
+						(testClass2.DONTMOVE == 0) && (testClass2.FORWARD == 1) &&
+						(testClass2.UP == 2) && (testClass2.DOWN == -2);
+				}
+			}
+		);
+    var testObj = new testClass2();
+		expect(7);
+		equal(testClass2.BACKWARD, -1);
+		equal(testClass2.DONTMOVE, 0);
+		equal(testClass2.FORWARD, 1);
+		equal(testClass2.UP, 2);
+		equal(testClass2.DOWN, -2);
+		equal(testObj.testFunc(), 1)
 		ok(testObj.testConst());
-	});
+	});	
 };

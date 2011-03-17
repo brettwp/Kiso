@@ -18,10 +18,10 @@ kiso.geom.SimplePolySimplify = kiso.Class(
 					firstPoint: 0,
 					lastPoint: simplePoly.length-1,
 					farthestPoint: null,
-					firstToLastHull: new kiso.geom.ReduceableSimplePolyConvexHull(simplePoly),
-					lastToFirstHull: new kiso.geom.ReduceableSimplePolyConvexHull(
+					firstToLastHull: new kiso.geom.ReducibleSimplePolyConvexHull(simplePoly),
+					lastToFirstHull: new kiso.geom.ReducibleSimplePolyConvexHull(
 						simplePoly,
-						kiso.geom.ReduceableSimplePolyConvexHull.LAST2FIRST
+						kiso.geom.ReducibleSimplePolyConvexHull.LAST2FIRST
 					)
 			}];
 			this._currentTolerance = null;

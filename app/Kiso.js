@@ -65,6 +65,7 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 				__super: parentClass.prototype,
 				__sub: null
 			};
+			setupClassConstants(newClass, parentClass);
 		}
 	}
 	
@@ -427,118 +428,7 @@ kiso.data.Tree = kiso.Class(
 	}
 );
 /** @namespace */
-kiso.geom = {};kiso.geom.IConvexHull = kiso.Interface([
-	'setPoints',
-	'getHullIndexes',
-	'build'
-]);
-kiso.geom.Point = kiso.Class({
-	_x: 0,
-	_y: 0,
-	
-	initialize: function(xOrPoint, y) {
-		if (arguments.length == 2) {
-			this.setXY(xOrPoint, y);
-		} else if (arguments.length == 1) {
-			this.setXY(xOrPoint._x, xOrPoint._y);
-		} else {
-			this.setXY(0, 0);
-		}
-	},
-	
-	setXY: function(x, y) {
-		this._x = x;
-		this._y = y;
-	},
-	
-	getX: function() {
-		return this._x;
-	},
-	
-	getY: function() {
-		return this._y;
-	},
-	
-	equals: function(point) {
-		return (this._x === point._x & this._y === point._y);
-	},
-	
-	isLeftOfVector: function(point0, point1) {
-		return (
-			(point0._x - this._x)*(point1._y - this._y) >= 
-				(point1._x - this._x)*(point0._y - this._y)
-		);
-	},
-	
-	distanceSquaredTo: function(point) {
-		return (point._x - this._x)*(point._x - this._x) + (point._y - this._y)*(point._y - this._y);
-	},
-	
-	distanceTo: function(point) {
-		return Math.sqrt(this.distanceSquaredTo(point));
-	},
-	
-	slopeTo: function(point) {
-		return (point._y - this._y)/(point._x - this._x);
-	},
-	
-	distanceToLine: function(point0, point1) {
-		var lineLength = point0.distanceTo(point1);
-		return (lineLength == 0) ? 
-			this.distanceTo(point0) :
-			this.unscaledDistanceToLine(point0, point1)/lineLength;
-	},
-	
-	unscaledDistanceToLine: function(point0, point1) {
-		return Math.abs(
-			(point1._x - point0._x)*(point0._y - this._y) - 
-			(point0._x - this._x)*(point1._y - point0._y)
-		);
-	}
-});kiso.geom.ReduceableSimplePolyConvexHull = kiso.Class(
-	{
-		parent: kiso.geom.SimplePolyConvexHull,
-		constants: {
-			_POP_OPERATION_AT_HEAD: 10,
-			_POP_OPERATION_AT_TAIL: 11,
-			_PUSH_OPERATION: 12
-		}
-	},
-	{
-		_operationStack: [],
-		
-		build: function() {
-			this._operationStack = [];
-			this.superclass.build();
-		},
-		
-		getOperationStack: function() {
-			return this._operationStack;
-		},
-		
-		reduceTo: function(endPointIndex) {
-			// @TODO
-		},
-		
-		_popHullPoint: function(atEnd) {
-			this._operationStack.push({
-				index: this.superclass._popHullPoint(atEnd),
-				operation: 
-					(atEnd == kiso.geom.ReduceableSimplePolyConvexHull._AT_HEAD) ?
-					kiso.geom.ReduceableSimplePolyConvexHull._POP_OPERATION_AT_HEAD :
-					kiso.geom.ReduceableSimplePolyConvexHull._POP_OPERATION_AT_TAIL
-			});
-		},
-		
-		_pushHullPoint: function(index) {
-			this.superclass._pushHullPoint(index);
-			this._operationStack.push({
-				index: index,
-				operation: kiso.geom.ReduceableSimplePolyConvexHull._PUSH_OPERATION
-			});
-		}
-	}
-);kiso.geom.SimplePolyConvexHull = kiso.Class(
+kiso.geom = {};kiso.geom.SimplePolyConvexHull = kiso.Class(
 	{
 		interfaces: kiso.geom.IConvexHull,
 		constants: {
@@ -559,7 +449,12 @@ kiso.geom.Point = kiso.Class({
 		},
 		
 		setPoints: function(simplePoly) {
-			this._simplePoly = simplePoly;
+			this._simplePoly = simplePoly.map(function(point) { return point.clone(); });
+			this._hullIndexes = null;
+		},
+		
+		getPoints: function() {
+			return this._simplePoly;
 		},
 		
 		setDirection: function(direction) {
@@ -651,13 +546,168 @@ kiso.geom.Point = kiso.Class({
 			}
 		},
 		
-		_pushHullPoint: function(index) {
-			this._hullIndexes.pushHead(index);
-			this._hullIndexes.pushTail(index);
+		_pushHullPoint: function(index, atEnd) {
+			if (atEnd != kiso.geom.SimplePolyConvexHull._AT_HEAD) this._hullIndexes.pushTail(index);
+			if (atEnd != kiso.geom.SimplePolyConvexHull._AT_TAIL) this._hullIndexes.pushHead(index);
 		}
 	}
 );
-kiso.geom.SimplePolySimplify = kiso.Class(
+kiso.geom.IConvexHull = kiso.Interface([
+	'setPoints',
+	'getHullIndexes',
+	'build'
+]);
+kiso.geom.Point = kiso.Class({
+	_x: 0,
+	_y: 0,
+	
+	initialize: function(xOrPoint, y) {
+		if (arguments.length == 2) {
+			this.setXY(xOrPoint, y);
+		} else if (arguments.length == 1) {
+			this.setXY(xOrPoint._x, xOrPoint._y);
+		} else {
+			this.setXY(0, 0);
+		}
+	},
+	
+	setXY: function(x, y) {
+		this._x = x;
+		this._y = y;
+	},
+	
+	getX: function() {
+		return this._x;
+	},
+	
+	getY: function() {
+		return this._y;
+	},
+	
+	clone: function() {
+		return new kiso.geom.Point(this);
+	},
+	
+	equals: function(point) {
+		return (this._x === point._x & this._y === point._y);
+	},
+	
+	isLeftOfVector: function(point0, point1) {
+		return (
+			(point0._x - this._x)*(point1._y - this._y) >= 
+				(point1._x - this._x)*(point0._y - this._y)
+		);
+	},
+	
+	distanceSquaredTo: function(point) {
+		return (point._x - this._x)*(point._x - this._x) + (point._y - this._y)*(point._y - this._y);
+	},
+	
+	distanceTo: function(point) {
+		return Math.sqrt(this.distanceSquaredTo(point));
+	},
+	
+	slopeTo: function(point) {
+		return (point._y - this._y)/(point._x - this._x);
+	},
+	
+	distanceToLine: function(point0, point1) {
+		var lineLength = point0.distanceTo(point1);
+		return (lineLength == 0) ? 
+			this.distanceTo(point0) :
+			this.unscaledDistanceToLine(point0, point1)/lineLength;
+	},
+	
+	unscaledDistanceToLine: function(point0, point1) {
+		return Math.abs(
+			(point1._x - point0._x)*(point0._y - this._y) - 
+			(point0._x - this._x)*(point1._y - point0._y)
+		);
+	}
+});kiso.geom.ReducibleSimplePolyConvexHull = kiso.Class(
+	{
+		parent: kiso.geom.SimplePolyConvexHull,
+		constants: {
+			_POP_OPERATION_AT_HEAD: 10,
+			_POP_OPERATION_AT_TAIL: 11,
+			_PUSH_OPERATION: 12
+		}
+	},
+	{
+		_operationStack: [],
+		
+		build: function() {
+			this._operationStack = [];
+			this.superclass.build();
+		},
+		
+		getOperationStack: function() {
+			return this._operationStack;
+		},
+		
+		_popHullPoint: function(atEnd) {
+			this._operationStack.push({
+				index: this.superclass._popHullPoint(atEnd),
+				operation: 
+					(atEnd == kiso.geom.ReducibleSimplePolyConvexHull._AT_HEAD) ?
+					kiso.geom.ReducibleSimplePolyConvexHull._POP_OPERATION_AT_HEAD :
+					kiso.geom.ReducibleSimplePolyConvexHull._POP_OPERATION_AT_TAIL
+			});
+		},
+		
+		_pushHullPoint: function(index) {
+			this.superclass._pushHullPoint(index);
+			this._operationStack.push({
+				index: index,
+				operation: kiso.geom.ReducibleSimplePolyConvexHull._PUSH_OPERATION
+			});
+		},
+		
+		reduceTo: function(polyEndPoint) {
+			var operationEndPoint = this._findPushOperation(polyEndPoint);
+			this._reverseOperations(operationEndPoint);
+			this._simplePoly.splice(polyEndPoint);
+		},
+		
+		_findPushOperation: function(polyEndPoint) {
+			var operationEndPoint = this._operationStack.length - 1;
+			for (var i = operationEndPoint; i >= 0; i--) {
+				if (this._operationStack[i].operation == 
+						kiso.geom.ReducibleSimplePolyConvexHull._PUSH_OPERATION) {
+					if (this._operationStack[i].index >= polyEndPoint) {
+						operationEndPoint = i;
+					} else {
+						break;
+					}
+				}
+			}
+			return operationEndPoint;
+		},
+		
+		_reverseOperations: function(operationEndPoint) {
+			var operation;
+			for (var i = this._operationStack.length-1; i > operationEndPoint; i--) {
+				operation = this._operationStack.pop();
+				if (operation.operation == kiso.geom.ReducibleSimplePolyConvexHull._PUSH_OPERATION) {
+					this.superclass._popHullPoint(kiso.geom.ReducibleSimplePolyConvexHull._AT_HEAD);
+					this.superclass._popHullPoint(kiso.geom.ReducibleSimplePolyConvexHull._AT_TAIL);
+				} else if (operation.operation == 
+						kiso.geom.ReducibleSimplePolyConvexHull._POP_OPERATION_AT_HEAD) {
+					this.superclass._pushHullPoint(
+						operation.index, 
+						kiso.geom.ReducibleSimplePolyConvexHull._AT_HEAD
+					);
+				} else if (operation.operation == 
+						kiso.geom.ReducibleSimplePolyConvexHull._POP_OPERATION_AT_TAIL) {
+					this.superclass._pushHullPoint(
+						operation.index, 
+						kiso.geom.ReducibleSimplePolyConvexHull._AT_TAIL
+					);
+				}
+			}
+		}
+	}
+);kiso.geom.SimplePolySimplify = kiso.Class(
 	{
 		interfaces: kiso.geom.IPolyReduce
 	},
@@ -677,10 +727,10 @@ kiso.geom.SimplePolySimplify = kiso.Class(
 					firstPoint: 0,
 					lastPoint: simplePoly.length-1,
 					farthestPoint: null,
-					firstToLastHull: new kiso.geom.ReduceableSimplePolyConvexHull(simplePoly),
-					lastToFirstHull: new kiso.geom.ReduceableSimplePolyConvexHull(
+					firstToLastHull: new kiso.geom.ReducibleSimplePolyConvexHull(simplePoly),
+					lastToFirstHull: new kiso.geom.ReducibleSimplePolyConvexHull(
 						simplePoly,
-						kiso.geom.ReduceableSimplePolyConvexHull.LAST2FIRST
+						kiso.geom.ReducibleSimplePolyConvexHull.LAST2FIRST
 					)
 			}];
 			this._currentTolerance = null;
