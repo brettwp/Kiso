@@ -5,11 +5,11 @@ kiso.data.Deque = kiso.Class(
 	},
 	{
 		pushHead: function(data) {
-			this._insertBefore(this._last, data);
+			this._addBefore(this._last, data);
 		},
 
 		pushTail: function(data) {
-			this._insertAfter(this._first, data);
+			this._addAfter(this._first, data);
 		},
 
 		popHead: function() {

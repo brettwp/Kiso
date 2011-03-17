@@ -29,7 +29,7 @@ kiso.data.AbstractList = kiso.Class({
 		return arrayOut;
 	},
 	
-	_insertBefore: function(node, data) {
+	_addBefore: function(node, data) {
 		var newNode = this._newNode(data);
 		newNode._prev = node._prev;
 		node._prev = newNode;
@@ -38,7 +38,7 @@ kiso.data.AbstractList = kiso.Class({
 		this._size++;		
 	},
 	
-	_insertAfter: function(node, data) {
+	_addAfter: function(node, data) {
 		var newNode = this._newNode(data);
 		newNode._next = node._next;
 		node._next = newNode;

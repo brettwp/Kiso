@@ -5,19 +5,19 @@ kiso.data.LinkedList = kiso.Class(
 	},
 	{
 		addFirst: function(data) {
-			this._insertAfter(this._first, data);
+			this._addAfter(this._first, data);
 		},
 
 		addLast: function(data) {
-			this._insertBefore(this._last, data);
+			this._addBefore(this._last, data);
 		},
 
 		addBefore: function(index, data) {
-			this._insertBefore(this._getNode(index), data);
+			this._addBefore(this._getNode(index), data);
 		},
 
 		addAfter: function(index, data) {
-			this._insertAfter(this._getNode(index), data);
+			this._addAfter(this._getNode(index), data);
 		},
 
 		remove: function(index) {

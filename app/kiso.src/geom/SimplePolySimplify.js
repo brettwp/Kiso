@@ -6,41 +6,91 @@ kiso.geom.SimplePolySimplify = kiso.Class(
 		_simplePoly: null,
 		_subSections: null,
 		_stopTolerance: null,
-		_currentTolerance: null,
+		_stopToleranceSquared: null,
+		_currentToleranceSquared: null,
 		
 		initialize: function(simplePoly) {
 			this.setPoints(simplePoly);
 		},
 		
 		setPoints: function(simplePoly) {
-			this._simplePoly = simplePoly;
-			this._subSection = [{
-					firstPoint: 0,
-					lastPoint: simplePoly.length-1,
-					farthestPoint: null,
-					firstToLastHull: new kiso.geom.ReducibleSimplePolyConvexHull(simplePoly),
-					lastToFirstHull: new kiso.geom.ReducibleSimplePolyConvexHull(
-						simplePoly,
-						kiso.geom.ReducibleSimplePolyConvexHull.LAST2FIRST
-					)
-			}];
-			this._currentTolerance = null;
+			var section = this._newSection();
+			section.firstPoint = 0;
+			section.lastPoint = simplePoly.length-1;
+			section.firstToLastHull = new kiso.geom.ReducibleSimplePolyConvexHull(simplePoly);
+			section.lastToFirstHull = new kiso.geom.ReducibleSimplePolyConvexHull(
+				simplePoly,
+				kiso.geom.ReducibleSimplePolyConvexHull.LAST2FIRST
+			);
+			this._simplePoly = simplePoly.map(function(point) {return point.clone();});
+			this._subSections = new kiso.data.LinkedList();
+			this._subSections.addFirst(section);
+			this._currentToleranceSquared = null;
 		},
 		
 		simplify: function() {
-			while (this._currentTolerance > this._stopTolerance) {
+			while (this._currentToleranceSquared > this._stopTolerance) {
 				this.simplifyOnce();
 			}
 		},
 		
 		simplifyOnce: function() {
-			for (var i=0; i<this._subSection.length-1; i++) {
-				this._simplifySection
+			for (var index=0; index<this._subSections.getSize(); index++) {
+				this._simplifySection(index);
 			}
+		},
+		
+		_simplifySection: function(index) {
+			if (this._subSections.getData(index).distanceSquared > this._stopToleranceSquared) {
+				this._seperateSection(index);
+			}
+		},
+		
+		_seperateSection: function(index) {
+			var sectionLeft = this._subSections.getData(index);
+			var sectionRight = this._newSection();
+			sectionRight.firstPoint = sectionLeft.farthestPoint;
+			sectionRight.lastPoint = sectionLeft.lastPoint;
+			sectionRight.lastToFirstHull = sectionLeft.lastToFirstHull;
+			this._reduceAndUpdateSection(sectionRight);
+			sectionLeft.lastPoint = sectionLeft.farthestPoint;
+			sectionLeft.farthestPoint = null;
+			sectionRight.lastToFirstHull = null;
+			this._reduceAndUpdateSection(sectionRight);
+		},
+		
+		_reduceAndUpdateSection: function(section) {
+			if (section.firstToLastHull) {
+				section.firstToLastHull.reduceTo(section.lastPoint - section.firstPoint);
+			} else {
+				section.firstToLastHull = new kiso.geom.ReducibleSimplePolyConvexHull(
+					this._simplePoly.slice(section.firstPoint, section.lastPoint)
+				);
+			}
+			if (section.lastToFirstHull) {
+				section.lastToFirstHull.reduceTo(section.lastPoint - section.firstPoint);
+			} else {
+				section.lastToFirstHull = new kiso.geom.ReducibleSimplePolyConvexHull(
+					this._simplePoly.slice(section.firstPoint, section.lastPoint),
+					kiso.geom.ReducibleSimplePolyConvexHull.LAST2FIRST
+				);
+			}
+		},
+		
+		_newSection: function(simplePoly) {
+			return {
+				firstPoint: null,
+				lastPoint: null,
+				farthestPoint: null,
+				distanceSquared: null,
+				firstToLastHull: null,
+				lastToFirstHull: null,
+			};
 		},
 		
 		setStopTolerance: function(tolerance) {
 			this._stopTolerance = tolerance;
+			this._stopToleranceSquared = tolerance*tolerance;
 		},
 		
 		getStopTolerance: function() {
@@ -48,7 +98,7 @@ kiso.geom.SimplePolySimplify = kiso.Class(
 		},
 		
 		getCurrentTolerance: function() {
-			return this._getCurrentTolerance;
+			return Math.sqrt(this._currentToleranceSquared);
 		}
 	}
 );

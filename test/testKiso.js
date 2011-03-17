@@ -512,7 +512,83 @@ unittest.data.testLinkedList = function() {
 		deepEqual(list.toArray(), [4,3,5,2,0,1]);
 	});
 };
-unittest.data.testTree = function() {
+unittest.data.testListIterator = function() {
+	var MockList = kiso.Class(kiso.data.AbstractList,
+		{
+			initialize: function(array) {
+				this.superclass.initialize();
+				for (i=0; i<array.length; i++) {
+					this._addBefore(this._last, array[i]);
+				}
+			}
+		}
+	);
+		
+	module('kiso.data.ListIterator Tests');
+
+	test('One item list has no next or previous', function() {
+		var list = new MockList([1]);
+		var iterator = new kiso.data.ListIterator(list);
+		expect(2);
+		ok(!iterator.hasNext());
+		ok(!iterator.hasPrevious());
+	});
+	
+	test('Add before and after', function() {
+		var list1 = new MockList([1]);
+		var iterator1 = new kiso.data.ListIterator(list1);
+		var list2 = new MockList([1]);
+		var iterator2 = new kiso.data.ListIterator(list2);
+		iterator1.addAfter(2);
+		iterator2.addBefore(3);
+		expect(4);
+		ok(iterator1.hasNext());
+		iterator1.gotoNext()
+		equal(iterator1.getData(), 2);
+		ok(iterator2.hasPrevious());
+		iterator2.gotoPrevious()
+		equal(iterator2.getData(), 3);
+	});
+	
+	test('Get index', function() {
+		var list = new MockList([0,1,2,3,4,5]);
+		var iterator = new kiso.data.ListIterator(list);
+		var testArray = [];
+		for (i=0; i<6; i++) {
+			testArray.push(iterator.getIndex());
+			if (iterator.hasNext()) iterator.gotoNext();
+		}
+		expect(1);
+		deepEqual(testArray, [0,1,2,3,4,5]);
+	});
+	
+	test('Remove', function() {
+		var list = new MockList([0,1,2,3,4,5]);
+		var iterator = new kiso.data.ListIterator(list);
+		iterator.gotoNext();
+		iterator.gotoNext();
+		iterator.gotoNext();
+		iterator.remove();
+		expect(1);
+		deepEqual(list.toArray(), [0,1,2,4,5]);
+	});
+	
+	test('Get and set data', function() {
+		var list = new MockList([0,1,2,3,4,5]);
+		var iterator = new kiso.data.ListIterator(list);
+		var doNext = true;
+		while (1) {
+			iterator.setData(iterator.getData() + 1);
+			if (iterator.hasNext()) {
+				iterator.gotoNext();
+			} else {
+				break;
+			}
+		}
+		expect(1);
+		deepEqual(list.toArray(), [1,2,3,4,5,6]);
+	});
+};unittest.data.testTree = function() {
 	module('kiso.data.Tree Tests');
 
 	test('Add children and get by index', function() {
@@ -670,7 +746,7 @@ unittest.geom.testReducibleSimplePolyConvexHull = function() {
 	var POP_OPERATION_AT_TAIL = kiso.geom.ReducibleSimplePolyConvexHull._POP_OPERATION_AT_TAIL
 	var PUSH_OPERATION = kiso.geom.ReducibleSimplePolyConvexHull._PUSH_OPERATION
 
-	module('kiso.geom.ReducalbeSimplePolyConvexHull Tests');
+	module('kiso.geom.ReducibleSimplePolyConvexHull Tests');
 	
 	test('6 point hull', function() {
 		var hull = new kiso.geom.ReducibleSimplePolyConvexHull(testPoints);
@@ -680,6 +756,7 @@ unittest.geom.testReducibleSimplePolyConvexHull = function() {
 		deepEqual(
 			hull.getOperationStack(), 
 			[ 
+				{ index: 2, operation: PUSH_OPERATION },
 				{ index: 2, operation: POP_OPERATION_AT_TAIL },
 				{ index: 4, operation: PUSH_OPERATION },
 				{ index: 4, operation: POP_OPERATION_AT_HEAD },
@@ -700,6 +777,7 @@ unittest.geom.testReducibleSimplePolyConvexHull = function() {
 		deepEqual(
 			hull.getOperationStack(), 
 			[
+				{ index: 3, operation: PUSH_OPERATION },
 				{ index: 3, operation: POP_OPERATION_AT_TAIL },
 				{ index: 1, operation: PUSH_OPERATION },
 				{ index: 1, operation: POP_OPERATION_AT_HEAD },
@@ -709,7 +787,7 @@ unittest.geom.testReducibleSimplePolyConvexHull = function() {
 		);
 	});
 	
-	test('Reduce Hull', function() {
+	test('Reduce hull', function() {
 		var mapFunc = function(point) { return [point.getX(), point.getY()]; };
 		var hull1 = new kiso.geom.ReducibleSimplePolyConvexHull(testPoints);
 		hull1.build();
@@ -717,11 +795,39 @@ unittest.geom.testReducibleSimplePolyConvexHull = function() {
 		var hull2 = new kiso.geom.ReducibleSimplePolyConvexHull(testPoints);
 		hull2.build();
 		hull2.reduceTo(3);
-		expect(4);
-		deepEqual(hull1.getPoints().map(mapFunc), testPoints.slice(0, 4).map(mapFunc));
+		var hull3 = new kiso.geom.ReducibleSimplePolyConvexHull(testPoints);
+		hull3.build();
+		hull3.reduceTo(2);
+		expect(6);
+		deepEqual(hull1.getPoints().map(mapFunc), testPoints.slice(0, 5).map(mapFunc));
 		deepEqual(hull1.getHullIndexes(), [4,0,1,2,4]);
-		deepEqual(hull2.getPoints().map(mapFunc), testPoints.slice(0, 3).map(mapFunc));
-		deepEqual(hull2.getHullIndexes(), [4,0,1,2,4]);
+		deepEqual(hull2.getPoints().map(mapFunc), testPoints.slice(0, 4).map(mapFunc));
+		deepEqual(hull2.getHullIndexes(), [2,0,1,2]);
+		deepEqual(hull3.getPoints().map(mapFunc), testPoints.slice(0, 3).map(mapFunc));
+		deepEqual(hull3.getHullIndexes(), [2,0,1,2]);
+	});
+	
+	test('Reduce hull reverse direction', function() {
+		var mapFunc = function(point) { return [point.getX(), point.getY()]; };
+		var hull1 = new kiso.geom.ReducibleSimplePolyConvexHull(testPoints,
+			kiso.geom.SimplePolyConvexHull.LAST2FIRST);
+		hull1.build();
+		hull1.reduceTo(1);
+		var hull2 = new kiso.geom.ReducibleSimplePolyConvexHull(testPoints,
+			kiso.geom.SimplePolyConvexHull.LAST2FIRST);
+		hull2.build();
+		hull2.reduceTo(2);
+		var hull3 = new kiso.geom.ReducibleSimplePolyConvexHull(testPoints,
+			kiso.geom.SimplePolyConvexHull.LAST2FIRST);
+		hull3.build();
+		hull3.reduceTo(3);
+		expect(6);
+		deepEqual(hull1.getPoints().map(mapFunc), testPoints.slice(1).map(mapFunc));
+		deepEqual(hull1.getHullIndexes(), [0,4,3,2,0]);
+		deepEqual(hull2.getPoints().map(mapFunc), testPoints.slice(2).map(mapFunc));
+		deepEqual(hull2.getHullIndexes(), [1,3,2,1]);
+		deepEqual(hull3.getPoints().map(mapFunc), testPoints.slice(3).map(mapFunc));
+		deepEqual(hull3.getHullIndexes(), [0,2,1,0]);
 	});
 };
 unittest.geom.testSimplePolyConvexHull = function() {
