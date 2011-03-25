@@ -303,6 +303,128 @@ kiso.data.AbstractList = kiso.Class({
 		};
 	}
 });
+kiso.data = kiso.data || {};
+kiso.data.IDeque = kiso.Interface([
+	'pushHead',
+	'pushTail',
+	'popHead',
+	'popTail',
+	'getHeadData',
+	'getTailData'
+]);
+kiso.data.ILinkedList = kiso.Interface([
+	'addFirst',
+	'addLast',
+	'addBefore',
+	'addAfter',
+	'remove',
+	'removeFirst',
+	'removeLast',
+	'getData'
+]);
+kiso.data.IListIterator = kiso.Interface([
+	'addAfter',
+	'addBefore',
+	'hasNext',
+	'hasPrevious',
+	'getIndex',
+	'gotoNext',
+	'gotoPrevious',
+	'remove',
+	'getData',
+	'setData'
+]);
+kiso.data.ITree = kiso.Interface([
+	'addChild',
+	'getChild',
+	'getChildCount',
+	'removeChild',
+	'getParent',
+	'getData',
+	'setData',
+	'purgeData',
+	'isLeaf',
+	'isRoot',
+	'isEmpty'
+]);
+kiso.data.AbstractList = kiso.Class({
+	_last: null,
+	_first: null,
+	_size: 0,
+	
+	initialize: function() {
+		this._last = this._newNode();
+		this._first = this._newNode();
+		this._last._prev = this._first;
+		this._first._next = this._last;
+		this._size = 0;
+	},
+	
+	getSize: function() {
+		return this._size;
+	},
+	
+	isEmpty: function() {
+		return (this._size == 0);
+	},
+	
+	toArray: function() {
+		var arrayOut = new Array();
+		var node = this._first._next;
+		while (node != this._last) {
+			arrayOut.push(node._data);
+			node = node._next;
+		}
+		return arrayOut;
+	},
+	
+	_addBefore: function(node, data) {
+		var newNode = this._newNode(data);
+		newNode._prev = node._prev;
+		node._prev = newNode;
+		newNode._next = node;
+		newNode._prev._next = newNode;
+		this._size++;		
+	},
+	
+	_addAfter: function(node, data) {
+		var newNode = this._newNode(data);
+		newNode._next = node._next;
+		node._next = newNode;
+		newNode._prev = node;
+		newNode._next._prev = newNode;
+		this._size++;
+	},
+	
+	_removeNode: function(node) {
+		node._prev._next = node._next;
+		node._next._prev = node._prev;
+		this._size--;
+		return node._data;
+	},
+	
+	_getNode: function(index) {
+		if (index < 0 || index >= this._size) {
+			throw new Error('Index out of bounds.');
+		}
+		var direction = (index*2 > this._size) ? -1 : 1;
+		var node = (direction == 1) ? this._first._next : this._last._prev;
+		var offset = (direction == 1) ? index : (this._size - index - 1);
+		while (offset > 0) {
+			node = (direction == 1) ? node._next : node._prev;
+			offset--;
+		}
+		return node;
+	},
+
+	_newNode: function(nodeData) {
+		return {
+			_data: nodeData,
+			_next: null,
+			_prev: null
+		};
+	}
+});
 kiso.data.Deque = kiso.Class(
 	{
 		parent: kiso.data.AbstractList,
@@ -1017,124 +1139,9 @@ kiso.geom.Point = kiso.Class({
 			}
 		}
 	}
-);kiso.geom.SimplePolyApproximator = kiso.Class(
-	{
-		interfaces: kiso.geom.IPolyApproximator
-	},
-	{
-		_simplePoly: null,
-		_subSections: null,
-		_stopTolerance: null,
-		_stopToleranceSquared: null,
-		_iterator: null,
-
-		initialize: function(simplePoly) {
-			this.setPoints(simplePoly);
-		},
-
-		setPoints: function(simplePoly) {
-			this._simplePoly = simplePoly.map(function(point) {return point.clone();});
-		},
-
-		build: function() {
-			this._initializeSections();
-			this._iterator = new kiso.data.ListIterator(this._subSections);
-			var doNext = true;
-			while(doNext) {
-				this._simplifyCurrentSection();
-				doNext = this._iterator.hasNext();
-				if (doNext) this._iterator.gotoNext();
-			}
-		},
-
-		_initializeSections: function() {
-			var section = this._newSection();
-			section.firstPoint = 0;
-			section.lastPoint = this._simplePoly.length-1;
-			this._subSections = new kiso.data.LinkedList();
-			this._subSections.addFirst(section);
-		},
-
-		_simplifyCurrentSection: function() {
-			var section = this._iterator.getData();
-			while (section.distanceSquared == null) {
-				this._findFarthestInCurrentSection();
-				if (section.distanceSquared > this._stopToleranceSquared) {
-					this._seperateCurrentSection();
-				}
-				section = this._iterator.getData();
-			}
-		},
-
-		_seperateCurrentSection: function() {
-			var sectionLeft = this._iterator.getData();
-			var sectionRight = this._newSection();
-			sectionRight.firstPoint = sectionLeft.farthestPoint;
-			sectionRight.lastPoint = sectionLeft.lastPoint;
-			sectionLeft.lastPoint = sectionLeft.farthestPoint;
-			sectionLeft.farthestPoint = null;
-			sectionLeft.distanceSquared = null;
-			this._iterator.addAfter(sectionRight);
-		},
-
-		_findFarthestInCurrentSection: function() {
-			var section = this._iterator.getData();
-			var point0 = this._simplePoly[section.firstPoint];
-			var point1 = this._simplePoly[section.lastPoint];
-			var deltaX = point1.getX() - point0.getX();
-			var deltaY = point1.getY() - point0.getY();
-			var numeratorMax = 0;
-			var numerator, indexMax;
-			for (var index = section.firstPoint+1; index < section.lastPoint; index++) {
-				numerator = Math.abs(
-					(deltaX * (point0.getY() - this._simplePoly[index].getY())) +
-					(deltaY * (this._simplePoly[index].getX() - point0.getX()))
-				);
-				if (numerator > numeratorMax) {
-					numeratorMax = numerator;
-					indexMax = index;
-				}
-			}
-			section.farthestPoint = indexMax;
-			section.distanceSquared = numeratorMax*numeratorMax/(deltaX*deltaX + deltaY*deltaY);
-		},
-
-		_newSection: function() {
-			return {
-				firstPoint: null,
-				lastPoint: null,
-				farthestPoint: null,
-				distanceSquared: null
-			};
-		},
-
-		setTolerance: function(tolerance) {
-			this._stopTolerance = tolerance;
-			this._stopToleranceSquared = tolerance*tolerance;
-		},
-
-		getTolerance: function() {
-			return this._stopTolerance;
-		},
-
-		getIndexes: function() {
-			var iterator = new kiso.data.ListIterator(this._subSections);
-			var doNext = true;
-			var sectionArray = [];
-			while(doNext) {
-				sectionArray.push(iterator.getData().firstPoint);
-				doNext = iterator.hasNext();
-				if (doNext) iterator.gotoNext();
-			}
-			sectionArray.push(iterator.getData().lastPoint);
-			return sectionArray;
-		}
-	}
-);
-kiso.geom.SimplePolyApproximatorHS = kiso.Class(
+);kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 	{
 		parent: kiso.geom.SimplePolyApproximatorDP
-		//interfaces: kiso.geom.IPolyApproximator
 	},
 	{
 		_initializeSections: function() {
@@ -1158,7 +1165,7 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 
 		_updateSectionHulls: function(section) {
 			var sectionSize = section.lastPoint - section.firstPoint;
-			if (sectionSize > 3) {
+			if (sectionSize > 6) {
 				if (section.firstToLastHull) {
 					section.firstToLastHull.reduceTo(sectionSize);
 				} else {
@@ -1184,10 +1191,10 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 
 		_findFarthestInCurrentSection: function() {
 			var section = this._iterator.getData();
-			if ((section.lastPoint - section.firstPoint) <=3) {
-				this.superclass._findFarthestInCurrentSection();
-			} else {
+			if ((section.lastPoint - section.firstPoint) > 6) {
 				this._useHullToFindFarthest();
+			} else {
+				this.superclass._findFarthestInCurrentSection();
 			}
 		},
 
@@ -1196,12 +1203,28 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 			var point0 = this._simplePoly[section.firstPoint];
 			var point1 = this._simplePoly[section.lastPoint];
 			var hullData = {
+				point0: point0,
+				point1: point1,
 				vectorX: point1.getX() - point0.getX(),
 				vectorY: point1.getY() - point0.getY(),
-				hullIndexes: section.firstToLastHull.getHullIndexes().map(
-					function(index) { return index + section.firstPoint; }
-				)
+				hullIndexes: section.firstToLastHull.getHullIndexes(),
+				distanceSquared: null,
+				farthestPoint: null
 			};
+			for (var i=0; i<hullData.hullIndexes.length; i++) {
+				hullData.hullIndexes[i] += section.firstPoint;
+			}
+			this._bruteSearchHull(hullData);
+			if (hullData.hullIndexes.length > 6) {
+				this._binarySearchHull(hullData);
+			} else {
+				this._bruteSearchHull(hullData);
+			}
+			section.farthestPoint = hullData.farthestPoint;
+			section.distanceSquared = hullData.distanceSquared;
+		},
+
+		_binarySearchHull: function(hullData) {
 			var edgeLow, edgeHigh, edgeMid, edgeFar1, edgeFar2, slopeSignBase, slopeSignBreak;
 			edgeLow = 0;
 			edgeHigh = hullData.hullIndexes.length-1;
@@ -1236,17 +1259,8 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 				}
 			}
 			edgeFar2--;
-			var distanceSquared1 = this._simplePoly[hullData.hullIndexes[edgeFar1]]
-				.distanceSquaredToLine(point0, point1);
-			var distanceSquared2 = this._simplePoly[hullData.hullIndexes[edgeFar2]]
-				.distanceSquaredToLine(point0, point1);
-			if (distanceSquared1 > distanceSquared2) {
-				section.distanceSquared = distanceSquared1;
-				section.farthestPoint = hullData.hullIndexes[edgeFar1];
-			} else {
-				section.distanceSquared = distanceSquared2;
-				section.farthestPoint = hullData.hullIndexes[edgeFar2];
-			}
+			this._compareFarthestCandidate(hullData, edgeFar1);
+			this._compareFarthestCandidate(hullData, edgeFar2);
 		},
 
 		_computeSlopeSign: function(hullData, index0, index1) {
@@ -1257,6 +1271,26 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 			return dotProd < 0 ? -1 : 1;
 		},
 
+		_bruteSearchHull: function(hullData) {
+			for (var i=0; i<hullData.hullIndexes.length; i++) {
+				this._compareFarthestCandidate(hullData, i);
+			}
+		},
+
+		_compareFarthestCandidate: function(hullData, edgeIndex) {
+			var distanceSquared = this._simplePoly[hullData.hullIndexes[edgeIndex]]
+				.distanceSquaredToLine(hullData.point0, hullData.point1);
+			if (hullData.distanceSquared == null ||
+					(distanceSquared > hullData.distanceSquared) ||
+					(
+						(distanceSquared == hullData.distanceSquared) &&
+						(hullData.hullIndexes[edgeIndex] < hullData.farthestPoint)
+					)) {
+				hullData.distanceSquared = distanceSquared;
+				hullData.farthestPoint = hullData.hullIndexes[edgeIndex];
+			}
+		},
+
 		_newSection: function() {
 			return {
 				firstPoint: null,
@@ -1266,228 +1300,6 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 				firstToLastHull: null,
 				lastToFirstHull: null
 			};
-		}
-	}
-);
-kiso.geom.SimplePolySimplifyDP = kiso.Class(
-	{
-		interfaces: kiso.geom.IPolyApproximator
-	},
-	{
-		_simplePoly: null,
-		_subSections: null,
-		_stopTolerance: null,
-		_stopToleranceSquared: null,
-		_iterator: null,
-
-		initialize: function(simplePoly) {
-			this.setPoints(simplePoly);
-		},
-
-		setPoints: function(simplePoly) {
-			var section = this._newSection();
-			section.firstPoint = 0;
-			section.lastPoint = simplePoly.length-1;
-			this._simplePoly = simplePoly.map(function(point) {return point.clone();});
-			this._subSections = new kiso.data.LinkedList();
-			this._subSections.addFirst(section);
-		},
-
-		simplify: function() {
-			this._iterator = new kiso.data.ListIterator(this._subSections);
-			var doNext = true;
-			while(doNext) {
-				this._simplifyCurrentSection();
-				doNext = this._iterator.hasNext();
-				if (doNext) this._iterator.gotoNext();
-			}
-		},
-
-		_simplifyCurrentSection: function() {
-			var section = this._iterator.getData();
-			while (section.distanceSquared == null) {
-				this._findFarthestInCurrentSection();
-				if (section.distanceSquared > this._stopToleranceSquared) {
-					this._seperateCurrentSection();
-				}
-				section = this._iterator.getData();
-			}
-		},
-
-		_seperateCurrentSection: function() {
-			var sectionLeft = this._iterator.getData();
-			if (sectionLeft.lastPoint - sectionLeft.firstPoint == 2) {
-				sectionLeft.status = kiso.geom.SimplePolySimplifyDP._3POINTS_DIVIDED;
-			} else {
-				var sectionRight = this._newSection();
-				sectionRight.firstPoint = sectionLeft.farthestPoint;
-				sectionRight.lastPoint = sectionLeft.lastPoint;
-				this._updateSectionStatus(sectionRight);
-				sectionLeft.lastPoint = sectionLeft.farthestPoint;
-				sectionLeft.farthestPoint = null;
-				sectionLeft.distanceSquared = null;
-				this._updateSectionStatus(sectionLeft);
-				this._iterator.addAfter(sectionRight);
-			}
-		},
-
-		_findFarthestInCurrentSection: function() {
-			var section = this._iterator.getData();
-			var point0 = this._simplePoly[section.firstPoint];
-			var point1 = this._simplePoly[section.lastPoint];
-			var deltaX = point1.getX() - point0.getX();
-			var deltaY = point1.getY() - point0.getY();
-			var numeratorMax = 0;
-			var numerator, indexMax;
-			for (var index = section.firstPoint+1; index < section.lastPoint; index++) {
-				numerator = Math.abs(
-					(deltaX * (point0.getY() - this._simplePoly[index].getY())) +
-					(deltaY * (point0.getX() - this._simplePoly[index].getX()))
-				);
-				if (numerator > numeratorMax) {
-					numeratorMax = numerator;
-					indexMax = index;
-				}
-			}
-			section.farthestPoint = indexMax;
-			section.distanceSquared = numeratorMax*numeratorMax /
-				Math.sqrt(deltaX*deltaX + deltaY+deltaY);
-		},
-
-		_newSection: function() {
-			return {
-				firstPoint: null,
-				lastPoint: null,
-				farthestPoint: null,
-				distanceSquared: null
-			};
-		},
-
-		setTolerance: function(tolerance) {
-			this._stopTolerance = tolerance;
-			this._stopToleranceSquared = tolerance*tolerance;
-		},
-
-		getTolerance: function() {
-			return this._stopTolerance;
-		},
-
-		getIndexes: function() {
-			var iterator = new kiso.data.ListIterator(this._subSections);
-			var doNext = true;
-			var sectionArray = [];
-			while(doNext) {
-				sectionArray.push(iterator.getData().firstPoint);
-				doNext = iterator.hasNext();
-				if (doNext) iterator.gotoNext();
-			}
-			sectionArray.push(iterator.getData().lastPoint);
-			return sectionArray;
-		}
-	}
-);
-kiso.geom.SimplePolyApproximatorHS = kiso.Class(
-	{
-		interfaces: kiso.geom.IPolyApproximator
-	},
-	{
-		_simplePoly: null,
-		_subSections: null,
-		_stopTolerance: null,
-		_stopToleranceSquared: null,
-
-		initialize: function(simplePoly) {
-			this.setPoints(simplePoly);
-		},
-
-		setPoints: function(simplePoly) {
-			this._simplePoly = simplePoly.map(function(point) {return point.clone();});
-		},
-
-		build: function() {
-			while (this._currentToleranceSquared > this._stopTolerance) {
-				this.simplifyOnce();
-			}
-		},
-
-		_initializeSections: function() {
-			var section = this._newSection();
-			section.firstPoint = 0;
-			section.lastPoint = simplePoly.length-1;
-			section.firstToLastHull = new kiso.geom.ReducibleSimplePolyConvexHull(simplePoly);
-			section.lastToFirstHull = new kiso.geom.ReducibleSimplePolyConvexHull(
-				simplePoly,
-				kiso.geom.ReducibleSimplePolyConvexHull.LAST2FIRST
-			);
-			this._subSections = new kiso.data.LinkedList();
-			this._subSections.addFirst(section);
-		},
-
-		simplifyOnce: function() {
-			for (var index=0; index<this._subSections.getSize(); index++) {
-				this._simplifyCurrentSection(index);
-			}
-		},
-
-		_simplifyCurrentSection: function(index) {
-			if (this._subSections.getData(index).distanceSquared > this._stopToleranceSquared) {
-				this._seperateCurrentSection(index);
-			}
-		},
-
-		_seperateCurrentSection: function(index) {
-			var sectionLeft = this._subSections.getData(index);
-			var sectionRight = this._newSection();
-			sectionRight.firstPoint = sectionLeft.farthestPoint;
-			sectionRight.lastPoint = sectionLeft.lastPoint;
-			sectionRight.lastToFirstHull = sectionLeft.lastToFirstHull;
-			this._reduceAndUpdateSection(sectionRight);
-			sectionLeft.lastPoint = sectionLeft.farthestPoint;
-			sectionLeft.farthestPoint = null;
-			sectionRight.lastToFirstHull = null;
-			this._reduceAndUpdateSection(sectionRight);
-		},
-
-		_reduceAndUpdateSection: function(section) {
-			if (section.firstToLastHull) {
-				section.firstToLastHull.reduceTo(section.lastPoint - section.firstPoint);
-			} else {
-				section.firstToLastHull = new kiso.geom.ReducibleSimplePolyConvexHull(
-					this._simplePoly.slice(section.firstPoint, section.lastPoint)
-				);
-			}
-			if (section.lastToFirstHull) {
-				section.lastToFirstHull.reduceTo(section.lastPoint - section.firstPoint);
-			} else {
-				section.lastToFirstHull = new kiso.geom.ReducibleSimplePolyConvexHull(
-					this._simplePoly.slice(section.firstPoint, section.lastPoint),
-					kiso.geom.ReducibleSimplePolyConvexHull.LAST2FIRST
-				);
-			}
-		},
-
-		_newSection: function(simplePoly) {
-			return {
-				firstPoint: null,
-				lastPoint: null,
-				farthestPoint: null,
-				distanceSquared: null,
-				firstToLastHull: null,
-				lastToFirstHull: null
-			};
-		},
-
-		setStopTolerance: function(tolerance) {
-			this._stopTolerance = tolerance;
-			this._stopToleranceSquared = tolerance*tolerance;
-		},
-
-		getStopTolerance: function() {
-			return this._stopTolerance;
-		},
-
-		getCurrentTolerance: function() {
-			return Math.sqrt(this._currentToleranceSquared);
 		}
 	}
 );

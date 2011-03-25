@@ -1,7 +1,6 @@
 kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 	{
 		parent: kiso.geom.SimplePolyApproximatorDP
-		//interfaces: kiso.geom.IPolyApproximator
 	},
 	{
 		_initializeSections: function() {
@@ -25,7 +24,7 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 
 		_updateSectionHulls: function(section) {
 			var sectionSize = section.lastPoint - section.firstPoint;
-			if (sectionSize > 3) {
+			if (sectionSize > 6) {
 				if (section.firstToLastHull) {
 					section.firstToLastHull.reduceTo(sectionSize);
 				} else {
@@ -51,10 +50,10 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 
 		_findFarthestInCurrentSection: function() {
 			var section = this._iterator.getData();
-			if ((section.lastPoint - section.firstPoint) <=3) {
-				this.superclass._findFarthestInCurrentSection();
-			} else {
+			if ((section.lastPoint - section.firstPoint) > 6) {
 				this._useHullToFindFarthest();
+			} else {
+				this.superclass._findFarthestInCurrentSection();
 			}
 		},
 
@@ -63,12 +62,28 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 			var point0 = this._simplePoly[section.firstPoint];
 			var point1 = this._simplePoly[section.lastPoint];
 			var hullData = {
+				point0: point0,
+				point1: point1,
 				vectorX: point1.getX() - point0.getX(),
 				vectorY: point1.getY() - point0.getY(),
-				hullIndexes: section.firstToLastHull.getHullIndexes().map(
-					function(index) { return index + section.firstPoint; }
-				)
+				hullIndexes: section.firstToLastHull.getHullIndexes(),
+				distanceSquared: null,
+				farthestPoint: null
 			};
+			for (var i=0; i<hullData.hullIndexes.length; i++) {
+				hullData.hullIndexes[i] += section.firstPoint;
+			}
+			this._bruteSearchHull(hullData);
+			if (hullData.hullIndexes.length > 6) {
+				this._binarySearchHull(hullData);
+			} else {
+				this._bruteSearchHull(hullData);
+			}
+			section.farthestPoint = hullData.farthestPoint;
+			section.distanceSquared = hullData.distanceSquared;
+		},
+
+		_binarySearchHull: function(hullData) {
 			var edgeLow, edgeHigh, edgeMid, edgeFar1, edgeFar2, slopeSignBase, slopeSignBreak;
 			edgeLow = 0;
 			edgeHigh = hullData.hullIndexes.length-1;
@@ -103,17 +118,8 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 				}
 			}
 			edgeFar2--;
-			var distanceSquared1 = this._simplePoly[hullData.hullIndexes[edgeFar1]]
-				.distanceSquaredToLine(point0, point1);
-			var distanceSquared2 = this._simplePoly[hullData.hullIndexes[edgeFar2]]
-				.distanceSquaredToLine(point0, point1);
-			if (distanceSquared1 > distanceSquared2) {
-				section.distanceSquared = distanceSquared1;
-				section.farthestPoint = hullData.hullIndexes[edgeFar1];
-			} else {
-				section.distanceSquared = distanceSquared2;
-				section.farthestPoint = hullData.hullIndexes[edgeFar2];
-			}
+			this._compareFarthestCandidate(hullData, edgeFar1);
+			this._compareFarthestCandidate(hullData, edgeFar2);
 		},
 
 		_computeSlopeSign: function(hullData, index0, index1) {
@@ -122,6 +128,26 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 			var dotProd = hullData.vectorX*(point1.getX() - point0.getX()) +
 				hullData.vectorY*(point1.getY() - point0.getY());
 			return dotProd < 0 ? -1 : 1;
+		},
+
+		_bruteSearchHull: function(hullData) {
+			for (var i=0; i<hullData.hullIndexes.length; i++) {
+				this._compareFarthestCandidate(hullData, i);
+			}
+		},
+
+		_compareFarthestCandidate: function(hullData, edgeIndex) {
+			var distanceSquared = this._simplePoly[hullData.hullIndexes[edgeIndex]]
+				.distanceSquaredToLine(hullData.point0, hullData.point1);
+			if (hullData.distanceSquared == null ||
+					(distanceSquared > hullData.distanceSquared) ||
+					(
+						(distanceSquared == hullData.distanceSquared) &&
+						(hullData.hullIndexes[edgeIndex] < hullData.farthestPoint)
+					)) {
+				hullData.distanceSquared = distanceSquared;
+				hullData.farthestPoint = hullData.hullIndexes[edgeIndex];
+			}
 		},
 
 		_newSection: function() {

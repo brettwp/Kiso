@@ -14,6 +14,8 @@
 
 			<filelist dir="${kiso.dir}/${kiso.file}.src/data"
 				files="_header.js,IDeque.js,IlinkedList.js,IListIterator.js,ITree.js,AbstractList.js" />
+      <filelist dir="${kiso.dir}/${kiso.file}.src/data"
+				files="_header.js,IDeque.js,IlinkedList.js,IListIterator.js,ITree.js,AbstractList.js" />
       <fileset dir="${kiso.dir}/${kiso.file}.src/data" includes="*.js"
 				excludes="_header.js,IDeque.js,IlinkedList.js,IListIterator.js,ITree.js,AbstractList.js" />
 
@@ -25,7 +27,6 @@
 			<filelist dir="${kiso.dir}/${kiso.file}.src/ui" files="_header.js"/>
       <fileset dir="${kiso.dir}/${kiso.file}.src/ui" includes="*.js" excludes="_header.js"/>
     </concat>
-    <attrib file="${kiso.dir}/${kiso.file}.js" readonly="true" hidden="false"/>
   </target>
 
   <target name="testKiso">
@@ -40,6 +41,5 @@
 			<filelist dir="${testKiso.dir}/${testKiso.file}.src/ui" files="_header.js"/>
       <fileset dir="${testKiso.dir}/${testKiso.file}.src/ui" includes="*.js" excludes="_header.js"/>
     </concat>
-    <attrib file="${testKiso.dir}/${testKiso.file}.js" readonly="true" hidden="false"/>
   </target>
 </project>
