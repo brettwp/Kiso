@@ -1,10 +1,10 @@
 /*!
- * Kiso JavaScript Library v0.2.1
+ * Kiso JavaScript Library v0.3.0
  * http://www.github.com/brettwp/Kiso
  * Copyright (c) 2010 Brett Pontarelli
- * 
+ *
  * Licensed under The MIT License.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -25,7 +25,7 @@
  */
 /** @namespace */
 this.kiso = this.kiso || {};
-kiso.VERSION = '0.2.1';
+kiso.VERSION = '0.3.0';
 kiso.Interface = function(parentInterface, methods) {
   return create(parentInterface, methods);
 
