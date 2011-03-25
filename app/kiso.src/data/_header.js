@@ -1,2 +1,1 @@
-/** @namespace */
-kiso.data = {};
+kiso.data = kiso.data || {};

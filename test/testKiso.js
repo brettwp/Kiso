@@ -30,7 +30,7 @@ unittest.testClass = function() {
 		expect(1);
 		equal(testObj.x, 'abc');
 	});
-	
+
 	test('Method binding', function() {
   	var testClass = kiso.Class({
 			counter: null,
@@ -46,7 +46,7 @@ unittest.testClass = function() {
 		expect(1);
 		equal(testObj.counter, 1);
   });
-	
+
 	test('Array unique to instance', function() {
 		var testClass = kiso.Class({
 			a: [1, 2, 3]
@@ -56,7 +56,7 @@ unittest.testClass = function() {
 		testObj2.a[0] = 5;
 		notEqual(testObj1.a[0], testObj2.a[0]);
 	});
-	
+
 	test('Object unique to instance', function() {
 		var testClass = kiso.Class({
 			a: {
@@ -70,7 +70,7 @@ unittest.testClass = function() {
 		testObj2.a.x = 5;
 		notDeepEqual(testObj1.a, testObj2.a);
 	});
-	
+
 	test('Mixed array-object unique to instance', function() {
 		var testClass = kiso.Class({
 			a: {
@@ -82,9 +82,9 @@ unittest.testClass = function() {
 		var testObj1 = new testClass();
 		var testObj2 = new testClass();
 		testObj2.a.x[0].deep[1] = 5;
-		notDeepEqual(testObj1.a, testObj2.a);		
+		notDeepEqual(testObj1.a, testObj2.a);
 	});
-	
+
 	test('Simple inheritance', function() {
 		var parentClass = kiso.Class({
 			name: 'Brett',
@@ -103,7 +103,7 @@ unittest.testClass = function() {
 		equal(testObj.sayName(), 'Brett');
 		equal(testObj.sayNameAndNumber(), 'Brett10');
 	});
-	
+
 	test('Function overloading', function() {
 		var parentClass = kiso.Class({
 			name: 'Brett',
@@ -120,7 +120,7 @@ unittest.testClass = function() {
 		expect(1);
 		equal(testObj.sayName(), 'Name=Brett');
 	});
-	
+
 	test('Call parent constructor and function', function() {
 		var parentClass = kiso.Class({
 			name: 'Brett',
@@ -250,7 +250,7 @@ unittest.testClass = function() {
 						(testClass.DONTMOVE == 0) && (testClass.FORWARD == 1);
 				}
       }
-    );	
+    );
     var testObj = new testClass();
 		expect(4);
 		equal(testClass.BACKWARD, -1);
@@ -258,7 +258,7 @@ unittest.testClass = function() {
 		equal(testClass.FORWARD, 1);
 		ok(testObj.testConst());
 	});
-	
+
   test('Class constants and inheritance', function() {
     var testClass1 = kiso.Class(
       {
@@ -300,7 +300,87 @@ unittest.testClass = function() {
 		equal(testClass2.DOWN, -2);
 		equal(testObj.testFunc(), 1)
 		ok(testObj.testConst());
-	});	
+	});
+
+  test('Throws error if interface doesn\'t exists (e.g. is declared after)', function() {
+    var errorThrown = false;
+    var errorMsg = 'No error thrown.';
+    try {
+      var testClass = kiso.Class(
+        {
+          interfaces: kiso.testInterface
+        },
+        {
+          foo: function() { return 'foo'; },
+          bar: function() { return 'bar'; }
+        }
+      );
+    } catch(e) {
+      errorThrown = true;
+      errorMsg = 'Error Thrown with message: ' + e.message;
+    }
+		expect(1);
+    ok(errorThrown, errorMsg)
+	});
+
+  test('Throws error if parent doesn\'t exists (e.g. is declared after)', function() {
+    var errorsThrown = 0;
+    try {
+      var testClass1 = kiso.Class(
+				kiso.parentClass,
+        {
+          foo: function() { return 'foo'; },
+          bar: function() { return 'bar'; }
+        }
+      );
+    } catch(e) {
+      errorsThrown++;
+    }
+    try {
+			var testClass2 = kiso.Class(
+				{
+					parent: kiso.parentClass
+				},
+        {
+          foo: function() { return 'foo'; },
+          bar: function() { return 'bar'; }
+        }
+      );
+    } catch(e) {
+      errorsThrown++;
+    }
+		expect(1);
+    equal(errorsThrown, 2);
+	});
+
+	test('Complex inheritance calls parent function with proper this', function() {
+		var classX = kiso.Class({
+			complex: null,
+			initialize: function() { this.complex = {}; },
+			setComplex: function(data) { this.complex.data = data; },
+			getComplex: function() { return this.complex.data; }
+		});
+		var parentA = kiso.Class({
+			value: null,
+			setValue: function(value) { this.value = value; },
+			getValue: function() { return this.value; }
+		});
+		var childA = kiso.Class(parentA, {
+				setValue: function(value) { this.superclass.setValue(value); },
+				getValueNew: function() { return this.value; }
+		});
+		var objectX1 = new classX();
+		var objectX2 = new classX();
+		var objectA1 = new childA();
+		var objectA2 = new childA();
+		objectX1.setComplex({ a:1, b:2 });
+		objectA1.setValue(objectX1);
+		objectX2.setComplex({ a:2, b:3 });
+		objectA2.setValue(objectX2);
+		expect(2);
+		deepEqual(objectA2.getValue().getComplex(), { a:1, b:2 });
+		deepEqual(objectA1.getValue().getComplex(), { a:2, b:3 });
+	});
 };
 unittest.testInterface = function() {
 	module('Kiso.Interface Tests');
@@ -725,12 +805,15 @@ unittest.geom.testPoint = function() {
 	});
 	
 	test('Distance from point to line', function() {
-		var testPoint1 = new kiso.geom.Point(1, 0);
-		var testPoint2 = new kiso.geom.Point(0, 0);
-		var testPoint3 = new kiso.geom.Point(1, 1);
-		expect(2);
-		ok(testPoint1.distanceToLine(testPoint2, testPoint3) - Math.SQRT2/2 < 1e-6);
-		equals(testPoint1.unscaledDistanceToLine(testPoint2, testPoint3), 1);
+		var testPoint1 = new kiso.geom.Point(0, 0);
+		var testPoint2 = new kiso.geom.Point(0, 3);
+		var testPoint3 = new kiso.geom.Point(2, 0);
+		var testPoint4 = new kiso.geom.Point(3, 3);
+		expect(4);
+		ok(testPoint1.distanceToLine(testPoint2, testPoint3) - Math.sqrt(36/13) < 1e-6);
+		ok(testPoint1.distanceSquaredToLine(testPoint2, testPoint3) - (36/13) < 1e-6);
+		ok(testPoint1.distanceToLine(testPoint4, testPoint4) - Math.sqrt(18) < 1e-6);
+		equals(testPoint1.distanceSquaredToLine(testPoint4, testPoint4), 18);
 	});
 };
 unittest.geom.testReducibleSimplePolyConvexHull = function() {
@@ -830,6 +913,108 @@ unittest.geom.testReducibleSimplePolyConvexHull = function() {
 		deepEqual(hull3.getHullIndexes(), [0,2,1,0]);
 	});
 };
+unittest.geom.testSimplePolyApproximatorDP = function() {
+	module('kiso.geom.SimplePolyApproximatorDP Tests');
+
+	test('Simplify', function() {
+		var newPoly = new kiso.geom.SimplePolyApproximatorDP([
+			new kiso.geom.Point(0,  9.80),
+			new kiso.geom.Point(1, -4.40),
+			new kiso.geom.Point(2, -1.20),
+			new kiso.geom.Point(3, -8.00),
+			new kiso.geom.Point(4, -5.90),
+			new kiso.geom.Point(5, -3.20),
+			new kiso.geom.Point(6, -9.80),
+			new kiso.geom.Point(7,  4.40),
+			new kiso.geom.Point(8, -2.20),
+			new kiso.geom.Point(9, -1.70)
+		]);
+
+		expect(6);
+		newPoly.setTolerance(8.6);
+		newPoly.build();
+		deepEqual(newPoly.getIndexes(), [0,3,9]);
+		newPoly.setTolerance(5.6);
+		newPoly.build();
+		deepEqual(newPoly.getIndexes(), [0,3,7,9]);
+		newPoly.setTolerance(3.4);
+		newPoly.build();
+		deepEqual(newPoly.getIndexes(), [0,3,5,6,7,9]);
+		newPoly.setTolerance(1.3);
+		newPoly.build();
+		deepEqual(newPoly.getIndexes(), [0,1,2,3,5,6,7,9]);
+		newPoly.setTolerance(1.1);
+		newPoly.build();
+		deepEqual(newPoly.getIndexes(), [0,1,2,3,5,6,7,8,9]);
+		newPoly.setTolerance(0.1);
+		newPoly.build();
+		deepEqual(newPoly.getIndexes(), [0,1,2,3,4,5,6,7,8,9]);
+	});
+};
+unittest.geom.testSimplePolyApproximatorHS = function() {
+	module('kiso.geom.SimplePolyApproximatorHS Tests');
+
+	test('Simplify', function() {
+		var poly = [
+			new kiso.geom.Point(0.0,  9.80),
+			new kiso.geom.Point(0.5, -0.30),
+			new kiso.geom.Point(1.0, -4.40),
+			new kiso.geom.Point(1.5,  6.80),
+			new kiso.geom.Point(2.0, -1.20),
+			new kiso.geom.Point(2.5,  6.00),
+			new kiso.geom.Point(3.0, -8.00),
+			new kiso.geom.Point(3.5, -1.00),
+			new kiso.geom.Point(4.0, -5.90),
+			new kiso.geom.Point(4.5, -3.90),
+			new kiso.geom.Point(5.0, -3.20),
+			new kiso.geom.Point(5.5, -7.40),
+			new kiso.geom.Point(6.0, -9.80),
+			new kiso.geom.Point(6.5,  3.80),
+			new kiso.geom.Point(7.0,  4.40),
+			new kiso.geom.Point(7.5, -3.60),
+			new kiso.geom.Point(8.0, -2.20),
+			new kiso.geom.Point(8.5,  0.30),
+			new kiso.geom.Point(9.0, -1.70),
+			new kiso.geom.Point(9.5, -4.30)
+		];
+		var newPolyDP = new kiso.geom.SimplePolyApproximatorDP(poly);
+		var newPolyHS = new kiso.geom.SimplePolyApproximatorHS(poly);
+
+		expect(6);
+		newPolyDP.setTolerance(7.4);
+		newPolyDP.build();
+		newPolyHS.setTolerance(7.4);
+		newPolyHS.build();
+		deepEqual(newPolyDP.getIndexes(), newPolyHS.getIndexes());
+		/*
+		newPolyDP.setTolerance(3.4);
+		newPolyDP.build();
+		newPolyHS.setTolerance(3.4);
+		newPolyHS.build();
+		deepEqual(newPolyDP.getIndexes(), newPolyHS.getIndexes());
+		newPolyDP.setTolerance(1.8);
+		newPolyDP.build();
+		newPolyHS.setTolerance(1.8);
+		newPolyHS.build();
+		deepEqual(newPolyDP.getIndexes(), newPolyHS.getIndexes());
+		newPolyDP.setTolerance(1.7);
+		newPolyDP.build();
+		newPolyHS.setTolerance(1.7);
+		newPolyHS.build();
+		deepEqual(newPolyDP.getIndexes(), newPolyHS.getIndexes());
+		newPolyDP.setTolerance(1.1);
+		newPolyDP.build();
+		newPolyHS.setTolerance(1.1);
+		newPolyHS.build();
+		deepEqual(newPolyDP.getIndexes(), newPolyHS.getIndexes());
+		newPolyDP.setTolerance(0.8);
+		newPolyDP.build();
+		newPolyHS.setTolerance(0.8);
+		newPolyHS.build();
+		deepEqual(newPolyDP.getIndexes(), newPolyHS.getIndexes());
+		*/
+	});
+};
 unittest.geom.testSimplePolyConvexHull = function() {
 	module('kiso.geom.SimplePolyConvexHull Tests');
 
@@ -849,7 +1034,7 @@ unittest.geom.testSimplePolyConvexHull = function() {
 		
 		expect(2);
 		deepEqual(hull1.getHullIndexes(), [2,0,1,2], 'CCW since v2 is left of v0v1');
-		deepEqual(hull2.getHullIndexes(), [2,1,0,2], 'CCW sincev2 is right of v0v1');
+		deepEqual(hull2.getHullIndexes(), [2,1,0,2], 'CCW since v2 is right of v0v1');
 	});
 	
 	test('4 point hull w/ v3 inside triangle v0v1v2', function() {

@@ -1,3 +1,6 @@
+// BEGIN: DEBUG CODE
+kiso.hulls = [];
+// END: DEBUG CODE
 kiso.geom.SimplePolyConvexHull = kiso.Class(
 	{
 		interfaces: kiso.geom.IConvexHull,
@@ -12,28 +15,32 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 		_simplePoly: null,
 		_hullIndexes: null,
 		_direction: null,
-		
+
 		initialize: function(simplePoly, direction) {
+			// BEGIN: DEBUG CODE
+			this.aaName = kiso.hulls.length;
+			kiso.hulls.push(this);
+			// END: DEBUG CODE
 			this.setPoints(simplePoly);
 			this.setDirection(direction);
 		},
-		
+
 		setPoints: function(simplePoly) {
 			this._simplePoly = simplePoly.map(function(point) { return point.clone(); });
 			this._hullIndexes = null;
 		},
-		
+
 		getPoints: function() {
 			return this._simplePoly;
 		},
-		
+
 		setDirection: function(direction) {
-			this._direction = 
+			this._direction =
 				(direction == kiso.geom.SimplePolyConvexHull.LAST2FIRST) ?
 				kiso.geom.SimplePolyConvexHull.LAST2FIRST :
 				kiso.geom.SimplePolyConvexHull.FIRST2LAST;
 		},
-		
+
 		getHullIndexes: function() {
 			return (this._hullIndexes) ? this._hullIndexes.toArray() : null;
 		},
@@ -44,7 +51,7 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 				this._expandHull();
 			}
 		},
-		
+
 		_initializeHullIndexes: function() {
 			this._hullIndexes = new kiso.data.Deque();
 			var indexes, point0, point1, point2;
@@ -68,7 +75,7 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 				this._hullIndexes.pushHead(indexes[i]);
 			}
 		},
-		
+
 		_expandHull: function() {
 			var index, increment;
 			if (this._direction == kiso.geom.SimplePolyConvexHull.LAST2FIRST) {
@@ -83,7 +90,7 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 				this._maintainConvexity(index, kiso.geom.SimplePolyConvexHull._AT_TAIL);
 			}
 		},
-		
+
 		_maintainConvexity: function(index, atEnd) {
 			var pushCurrentPoint = false;
 			var popHullPoint = true;
@@ -98,7 +105,7 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 				this._pushHullPoint(index);
 			}
 		},
-		
+
 		_isPointLeftOfVector: function(index, atEnd) {
 			var atHead = (atEnd == kiso.geom.SimplePolyConvexHull._AT_HEAD);
 			var index0 = atHead ? this._hullIndexes.getHeadData(1) : this._hullIndexes.getTailData(0);
@@ -107,7 +114,7 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 				this._simplePoly[index0], this._simplePoly[index1]
 			);
 		},
-		
+
 		_popHullPoint: function(atEnd) {
 			if (atEnd == kiso.geom.SimplePolyConvexHull._AT_HEAD) {
 				return this._hullIndexes.popHead()
@@ -115,7 +122,7 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 				return this._hullIndexes.popTail();
 			}
 		},
-		
+
 		_pushHullPoint: function(index, atEnd) {
 			if (atEnd != kiso.geom.SimplePolyConvexHull._AT_HEAD) this._hullIndexes.pushTail(index);
 			if (atEnd != kiso.geom.SimplePolyConvexHull._AT_TAIL) this._hullIndexes.pushHead(index);

@@ -8,11 +8,21 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 		if (childDefinition == undefined) {
 			childDefinition = parentClassOrObj;
 		} else if (typeof parentClassOrObj == 'object') {
-      parentClass = parentClassOrObj.parent;
-      interfaces = parentClassOrObj.interfaces;
+			if (parentClassOrObj.hasOwnProperty('parent') && !parentClassOrObj.parent) {
+				throw new Error('Parent class undefined.');
+			} else {
+				parentClass = parentClassOrObj.parent;
+			}
+			if (parentClassOrObj.hasOwnProperty('interfaces') && !parentClassOrObj.interfaces) {
+				throw new Error('Interface undefined.');
+			} else {
+				interfaces = parentClassOrObj.interfaces;
+			}
 			constants = parentClassOrObj.constants;
-    } else {
-      parentClass = parentClassOrObj;
+    } else if (parentClassOrObj) {
+			parentClass = parentClassOrObj;
+		} else {
+			throw new Error('Parent class undefined.');
     }
 		var newClass = function() {
 			createUniqueInstanceVariables(this);
@@ -26,11 +36,11 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 		setupClassConstants(newClass, constants);
 		return newClass;
 	}
-	
+
 	function createUniqueInstanceVariables(obj) {
 		for (var prop in obj) {
 			if (prop != 'superclass') {
-				if (obj[prop] != null && 
+				if (obj[prop] != null &&
 					typeof obj[prop] == 'object') obj[prop] = clone(obj[prop]);
 			}
 		}
@@ -47,7 +57,7 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 	  }
 	  return newObj;
 	}
-	
+
 	function setupClassFromParent(newClass, parentClass) {
 		if (parentClass) {
 			var func = function() {};
@@ -60,7 +70,7 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 			setupClassConstants(newClass, parentClass);
 		}
 	}
-	
+
   function extendClassMembers(newClass, extension) {
 		var extObj = null;
 		var propType = null;
@@ -73,7 +83,7 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 			propType = typeof newClass.prototype[prop];
 			if (newClass.prototype[prop] && propType == 'function') {
 				eval(
-					'newClass.prototype.superclass.'+prop+'=function(){'+ 
+					'newClass.prototype.superclass.'+prop+'=function(){'+
 					'return this.__super.'+prop+'.apply(this.__sub,arguments);};'
 				);
 			}

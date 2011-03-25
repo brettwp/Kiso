@@ -1,2 +1,1 @@
-/** @namespace */
-kiso.geom = {};
+kiso.geom = kiso.geom || {};

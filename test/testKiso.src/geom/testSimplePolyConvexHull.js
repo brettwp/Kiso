@@ -17,7 +17,7 @@ unittest.geom.testSimplePolyConvexHull = function() {
 		
 		expect(2);
 		deepEqual(hull1.getHullIndexes(), [2,0,1,2], 'CCW since v2 is left of v0v1');
-		deepEqual(hull2.getHullIndexes(), [2,1,0,2], 'CCW sincev2 is right of v0v1');
+		deepEqual(hull2.getHullIndexes(), [2,1,0,2], 'CCW since v2 is right of v0v1');
 	});
 	
 	test('4 point hull w/ v3 inside triangle v0v1v2', function() {

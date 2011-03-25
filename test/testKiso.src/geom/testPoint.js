@@ -43,11 +43,14 @@ unittest.geom.testPoint = function() {
 	});
 	
 	test('Distance from point to line', function() {
-		var testPoint1 = new kiso.geom.Point(1, 0);
-		var testPoint2 = new kiso.geom.Point(0, 0);
-		var testPoint3 = new kiso.geom.Point(1, 1);
-		expect(2);
-		ok(testPoint1.distanceToLine(testPoint2, testPoint3) - Math.SQRT2/2 < 1e-6);
-		equals(testPoint1.unscaledDistanceToLine(testPoint2, testPoint3), 1);
+		var testPoint1 = new kiso.geom.Point(0, 0);
+		var testPoint2 = new kiso.geom.Point(0, 3);
+		var testPoint3 = new kiso.geom.Point(2, 0);
+		var testPoint4 = new kiso.geom.Point(3, 3);
+		expect(4);
+		ok(testPoint1.distanceToLine(testPoint2, testPoint3) - Math.sqrt(36/13) < 1e-6);
+		ok(testPoint1.distanceSquaredToLine(testPoint2, testPoint3) - (36/13) < 1e-6);
+		ok(testPoint1.distanceToLine(testPoint4, testPoint4) - Math.sqrt(18) < 1e-6);
+		equals(testPoint1.distanceSquaredToLine(testPoint4, testPoint4), 18);
 	});
 };

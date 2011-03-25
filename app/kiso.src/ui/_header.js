@@ -1,2 +1,1 @@
-/** @namespace */
-kiso.ui = {};
+kiso.ui = kiso.ui || {};

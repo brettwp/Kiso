@@ -23,7 +23,7 @@ unittest.testClass = function() {
 		expect(1);
 		equal(testObj.x, 'abc');
 	});
-	
+
 	test('Method binding', function() {
   	var testClass = kiso.Class({
 			counter: null,
@@ -39,7 +39,7 @@ unittest.testClass = function() {
 		expect(1);
 		equal(testObj.counter, 1);
   });
-	
+
 	test('Array unique to instance', function() {
 		var testClass = kiso.Class({
 			a: [1, 2, 3]
@@ -49,7 +49,7 @@ unittest.testClass = function() {
 		testObj2.a[0] = 5;
 		notEqual(testObj1.a[0], testObj2.a[0]);
 	});
-	
+
 	test('Object unique to instance', function() {
 		var testClass = kiso.Class({
 			a: {
@@ -63,7 +63,7 @@ unittest.testClass = function() {
 		testObj2.a.x = 5;
 		notDeepEqual(testObj1.a, testObj2.a);
 	});
-	
+
 	test('Mixed array-object unique to instance', function() {
 		var testClass = kiso.Class({
 			a: {
@@ -75,9 +75,9 @@ unittest.testClass = function() {
 		var testObj1 = new testClass();
 		var testObj2 = new testClass();
 		testObj2.a.x[0].deep[1] = 5;
-		notDeepEqual(testObj1.a, testObj2.a);		
+		notDeepEqual(testObj1.a, testObj2.a);
 	});
-	
+
 	test('Simple inheritance', function() {
 		var parentClass = kiso.Class({
 			name: 'Brett',
@@ -96,7 +96,7 @@ unittest.testClass = function() {
 		equal(testObj.sayName(), 'Brett');
 		equal(testObj.sayNameAndNumber(), 'Brett10');
 	});
-	
+
 	test('Function overloading', function() {
 		var parentClass = kiso.Class({
 			name: 'Brett',
@@ -113,7 +113,7 @@ unittest.testClass = function() {
 		expect(1);
 		equal(testObj.sayName(), 'Name=Brett');
 	});
-	
+
 	test('Call parent constructor and function', function() {
 		var parentClass = kiso.Class({
 			name: 'Brett',
@@ -243,7 +243,7 @@ unittest.testClass = function() {
 						(testClass.DONTMOVE == 0) && (testClass.FORWARD == 1);
 				}
       }
-    );	
+    );
     var testObj = new testClass();
 		expect(4);
 		equal(testClass.BACKWARD, -1);
@@ -251,7 +251,7 @@ unittest.testClass = function() {
 		equal(testClass.FORWARD, 1);
 		ok(testObj.testConst());
 	});
-	
+
   test('Class constants and inheritance', function() {
     var testClass1 = kiso.Class(
       {
@@ -293,5 +293,85 @@ unittest.testClass = function() {
 		equal(testClass2.DOWN, -2);
 		equal(testObj.testFunc(), 1)
 		ok(testObj.testConst());
-	});	
+	});
+
+  test('Throws error if interface doesn\'t exists (e.g. is declared after)', function() {
+    var errorThrown = false;
+    var errorMsg = 'No error thrown.';
+    try {
+      var testClass = kiso.Class(
+        {
+          interfaces: kiso.testInterface
+        },
+        {
+          foo: function() { return 'foo'; },
+          bar: function() { return 'bar'; }
+        }
+      );
+    } catch(e) {
+      errorThrown = true;
+      errorMsg = 'Error Thrown with message: ' + e.message;
+    }
+		expect(1);
+    ok(errorThrown, errorMsg)
+	});
+
+  test('Throws error if parent doesn\'t exists (e.g. is declared after)', function() {
+    var errorsThrown = 0;
+    try {
+      var testClass1 = kiso.Class(
+				kiso.parentClass,
+        {
+          foo: function() { return 'foo'; },
+          bar: function() { return 'bar'; }
+        }
+      );
+    } catch(e) {
+      errorsThrown++;
+    }
+    try {
+			var testClass2 = kiso.Class(
+				{
+					parent: kiso.parentClass
+				},
+        {
+          foo: function() { return 'foo'; },
+          bar: function() { return 'bar'; }
+        }
+      );
+    } catch(e) {
+      errorsThrown++;
+    }
+		expect(1);
+    equal(errorsThrown, 2);
+	});
+
+	test('Complex inheritance calls parent function with proper this', function() {
+		var classX = kiso.Class({
+			complex: null,
+			initialize: function() { this.complex = {}; },
+			setComplex: function(data) { this.complex.data = data; },
+			getComplex: function() { return this.complex.data; }
+		});
+		var parentA = kiso.Class({
+			value: null,
+			setValue: function(value) { this.value = value; },
+			getValue: function() { return this.value; }
+		});
+		var childA = kiso.Class(parentA, {
+				setValue: function(value) { this.superclass.setValue(value); },
+				getValueNew: function() { return this.value; }
+		});
+		var objectX1 = new classX();
+		var objectX2 = new classX();
+		var objectA1 = new childA();
+		var objectA2 = new childA();
+		objectX1.setComplex({ a:1, b:2 });
+		objectA1.setValue(objectX1);
+		objectX2.setComplex({ a:2, b:3 });
+		objectA2.setValue(objectX2);
+		expect(2);
+		deepEqual(objectA2.getValue().getComplex(), { a:1, b:2 });
+		deepEqual(objectA1.getValue().getComplex(), { a:2, b:3 });
+	});
 };
