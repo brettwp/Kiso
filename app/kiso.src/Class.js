@@ -1,3 +1,28 @@
+/**
+ * @description Creates a new class.
+ * @param {Class|Object} parentClassOrObj The parent class, an object of parameters, or the class definition object.
+ * @param childDefinition The class definition object when the first arguments is an object
+ *
+ * There are three basic ways to instantiate a class:
+ * 1) Class({...}) - A base class
+ * 2) Class(parentClass, {...}) - A sub-class that inherits from a parent class.
+ * 3) Class({...}, {...}) - The second argument is the class definition while the first contains one or more of the following: parent, constants, interfaces
+ *    Full usage of the 3 case might look like this:
+ *    kiso.Class(
+ *			{
+ *				parent: someParent,
+ *				interfaces: [a single interface or an array of interfaces],
+ *				constants: {an object of constant names and values}
+ *			},
+ *			{...}
+ *		)
+ *
+ *		Note that constants are attached to the function, so for a class defined roughly like this:
+ *		  var example = kiso.Class({ constants: { ONE:1, TWO:2 } }, {...});
+ *		the constants will be like this:
+ *		  example.ONE == 1
+ *		  example.TWO == 2
+ */
 kiso.Class = function(parentClassOrObj, childDefinition) {
 	return create(parentClassOrObj, childDefinition);
 
