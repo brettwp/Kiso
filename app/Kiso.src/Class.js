@@ -26,7 +26,7 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
     }
 		var newClass = function() {
 			createUniqueInstanceVariables(this);
-			if (this.superclass) {this.superclass.__sub = this;}
+			if (this.__superclass) this.superclass = new this.__superclass(this);
 			if (this.initialize) this.initialize.apply(this, arguments);
 		};
 		setupClassFromParent(newClass, parentClass);
@@ -39,7 +39,7 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 
 	function createUniqueInstanceVariables(obj) {
 		for (var prop in obj) {
-			if (prop != 'superclass') {
+			if (prop != '__superclass') {
 				if (obj[prop] != null &&
 					typeof obj[prop] == 'object') obj[prop] = clone(obj[prop]);
 			}
@@ -63,32 +63,32 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 			var func = function() {};
 			func.prototype = parentClass.prototype;
 			newClass.prototype = new func();
-			newClass.prototype.superclass = {
-				__super: parentClass.prototype,
-				__sub: null
+			newClass.prototype.__superclass = function(subObject) {
+				this._subObject = subObject;
+				this._parentClass = parentClass.prototype;
 			};
 			setupClassConstants(newClass, parentClass);
 		}
 	}
 
   function extendClassMembers(newClass, extension) {
-		var extObj = null;
-		var propType = null;
+		var extObj, prop;
 		if (typeof extension == 'function') {
 			extObj = extension.prototype;
 		} else {
 			extObj = extension
 		}
-		for (var prop in extObj) {
-			propType = typeof newClass.prototype[prop];
-			if (newClass.prototype[prop] && propType == 'function') {
-				eval(
-					'newClass.prototype.superclass.'+prop+'=function(){'+
-					'return this.__super.'+prop+'.apply(this.__sub,arguments);};'
-				);
+		for (prop in extObj) {
+			if (newClass.prototype[prop] && typeof newClass.prototype[prop] == 'function') {
+				newClass.prototype.__superclass.prototype[prop] = wrapParentFunction(prop);
 			}
 			newClass.prototype[prop] = extObj[prop];
 		}
+	}
+
+	function wrapParentFunction(superFunc) {
+		var sFunc = superFunc;
+		return function() { return this._parentClass[sFunc].apply(this._subObject,arguments) }
 	}
 
   function extendClassInterfaces(newClass, interfaces) {

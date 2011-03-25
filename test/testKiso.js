@@ -353,33 +353,36 @@ unittest.testClass = function() {
     equal(errorsThrown, 2);
 	});
 
-	test('Complex inheritance calls parent function with proper this', function() {
-		var classX = kiso.Class({
-			complex: null,
-			initialize: function() { this.complex = {}; },
-			setComplex: function(data) { this.complex.data = data; },
-			getComplex: function() { return this.complex.data; }
-		});
+	test('Inheritance or multiple functions calls parent function with proper this', function() {
 		var parentA = kiso.Class({
 			value: null,
+			other: null,
 			setValue: function(value) { this.value = value; },
-			getValue: function() { return this.value; }
+			getValue: function() { return this.value; },
+			setOther: function(value) { this.other = value; },
+			getOther: function() { return this.other; }
 		});
 		var childA = kiso.Class(parentA, {
-				setValue: function(value) { this.superclass.setValue(value); },
-				getValueNew: function() { return this.value; }
+			setValue: function(v) { this.superclass.setValue(v); },
+			getValue: function() { return this.value; },
+			setOther: function(v) { this.superclass.setOther(v); },
+			getOther: function() { return this.other; },
+			getValueNew: function() { return this.superclass.getValue(); },
+			getOtherNew: function() { return this.superclass.getOther(); }
 		});
-		var objectX1 = new classX();
-		var objectX2 = new classX();
-		var objectA1 = new childA();
-		var objectA2 = new childA();
-		objectX1.setComplex({ a:1, b:2 });
-		objectA1.setValue(objectX1);
-		objectX2.setComplex({ a:2, b:3 });
-		objectA2.setValue(objectX2);
-		expect(2);
-		deepEqual(objectA2.getValue().getComplex(), { a:1, b:2 });
-		deepEqual(objectA1.getValue().getComplex(), { a:2, b:3 });
+		var object1 = new childA();
+		var object2 = new childA();
+		var object3 = new childA();
+		var object4 = new childA();
+		object1.setValue(1);
+		object2.setValue({a:2});
+		object3.setOther([1,2]);
+		object4.setOther(9);
+		expect(4);
+		deepEqual(object1.getValue(), object1.getValueNew());
+		deepEqual(object2.getValue(), object2.getValueNew());
+		deepEqual(object3.getOther(), object3.getOtherNew());
+		equal(object4.getOther(), object4.getOtherNew());
 	});
 };
 unittest.testInterface = function() {
@@ -986,7 +989,6 @@ unittest.geom.testSimplePolyApproximatorHS = function() {
 		newPolyHS.setTolerance(7.4);
 		newPolyHS.build();
 		deepEqual(newPolyDP.getIndexes(), newPolyHS.getIndexes());
-		/*
 		newPolyDP.setTolerance(3.4);
 		newPolyDP.build();
 		newPolyHS.setTolerance(3.4);
@@ -1012,7 +1014,6 @@ unittest.geom.testSimplePolyApproximatorHS = function() {
 		newPolyHS.setTolerance(0.8);
 		newPolyHS.build();
 		deepEqual(newPolyDP.getIndexes(), newPolyHS.getIndexes());
-		*/
 	});
 };
 unittest.geom.testSimplePolyConvexHull = function() {

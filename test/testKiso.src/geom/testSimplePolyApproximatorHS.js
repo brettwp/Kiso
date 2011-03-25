@@ -33,7 +33,6 @@ unittest.geom.testSimplePolyApproximatorHS = function() {
 		newPolyHS.setTolerance(7.4);
 		newPolyHS.build();
 		deepEqual(newPolyDP.getIndexes(), newPolyHS.getIndexes());
-		/*
 		newPolyDP.setTolerance(3.4);
 		newPolyDP.build();
 		newPolyHS.setTolerance(3.4);
@@ -59,6 +58,5 @@ unittest.geom.testSimplePolyApproximatorHS = function() {
 		newPolyHS.setTolerance(0.8);
 		newPolyHS.build();
 		deepEqual(newPolyDP.getIndexes(), newPolyHS.getIndexes());
-		*/
 	});
 };

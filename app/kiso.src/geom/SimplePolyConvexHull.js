@@ -1,6 +1,3 @@
-// BEGIN: DEBUG CODE
-kiso.hulls = [];
-// END: DEBUG CODE
 kiso.geom.SimplePolyConvexHull = kiso.Class(
 	{
 		interfaces: kiso.geom.IConvexHull,
@@ -17,10 +14,6 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 		_direction: null,
 
 		initialize: function(simplePoly, direction) {
-			// BEGIN: DEBUG CODE
-			this.aaName = kiso.hulls.length;
-			kiso.hulls.push(this);
-			// END: DEBUG CODE
 			this.setPoints(simplePoly);
 			this.setDirection(direction);
 		},

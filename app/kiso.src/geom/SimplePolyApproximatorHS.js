@@ -30,7 +30,7 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 					section.firstToLastHull.reduceTo(sectionSize);
 				} else {
 					section.firstToLastHull = new kiso.geom.ReducibleSimplePolyConvexHull(
-						this._simplePoly.slice(section.firstPoint, section.lastPoint)
+						this._simplePoly.slice(section.firstPoint, section.lastPoint+1)
 					);
 					section.firstToLastHull.build();
 				}
@@ -38,7 +38,7 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 					section.lastToFirstHull.reduceTo(section.lastPoint - section.firstPoint);
 				} else {
 					section.lastToFirstHull = new kiso.geom.ReducibleSimplePolyConvexHull(
-						this._simplePoly.slice(section.firstPoint, section.lastPoint),
+						this._simplePoly.slice(section.firstPoint, section.lastPoint+1),
 						kiso.geom.ReducibleSimplePolyConvexHull.LAST2FIRST
 					);
 					section.lastToFirstHull.build();
@@ -65,7 +65,9 @@ kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 			var hullData = {
 				vectorX: point1.getX() - point0.getX(),
 				vectorY: point1.getY() - point0.getY(),
-				hullIndexes: section.firstToLastHull.getHullIndexes()
+				hullIndexes: section.firstToLastHull.getHullIndexes().map(
+					function(index) { return index + section.firstPoint; }
+				)
 			};
 			var edgeLow, edgeHigh, edgeMid, edgeFar1, edgeFar2, slopeSignBase, slopeSignBreak;
 			edgeLow = 0;
