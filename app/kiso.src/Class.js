@@ -104,7 +104,8 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 			extObj = extension
 		}
 		for (prop in extObj) {
-			if (newClass.prototype[prop] && typeof newClass.prototype[prop] == 'function') {
+			if (newClass.prototype.__superclass &&
+					newClass.prototype[prop] && typeof newClass.prototype[prop] == 'function') {
 				newClass.prototype.__superclass.prototype[prop] = wrapParentFunction(prop);
 			}
 			newClass.prototype[prop] = extObj[prop];

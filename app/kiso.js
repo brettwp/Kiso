@@ -26,6 +26,7 @@
 /** @namespace */
 this.kiso = this.kiso || {};
 kiso.VERSION = '0.3.0';
+
 /**
  * @description Creates a new interface
  * @param parentInterface A parent interface or an array of methods.
@@ -64,6 +65,7 @@ kiso.Interface = function(parentInterface, methods) {
     }
   }
 };
+
 /**
  * @description Creates a new class.
  * @param {Class|Object} parentClassOrObj The parent class, an object of parameters, or the class definition object.
@@ -170,7 +172,8 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 			extObj = extension
 		}
 		for (prop in extObj) {
-			if (newClass.prototype[prop] && typeof newClass.prototype[prop] == 'function') {
+			if (newClass.prototype.__superclass &&
+					newClass.prototype[prop] && typeof newClass.prototype[prop] == 'function') {
 				newClass.prototype.__superclass.prototype[prop] = wrapParentFunction(prop);
 			}
 			newClass.prototype[prop] = extObj[prop];
@@ -215,7 +218,231 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 		}
 	}
 };
+
+kiso.array = kiso.array || {};
+
+kiso.array.Array = kiso.Class({
+	_array: null,
+
+	initialize: function(useArray) {
+		this._array = (useArray)? useArray : new Array();
+	},
+
+	concat: function() {
+		return this._array.concat.apply(this._array, arguments);
+	},
+
+	join: function() {
+		return this._array.join.apply(this._array, arguments);
+	},
+
+	pop: function() {
+		return this._array.pop();
+	},
+
+	push: function() {
+		this._array.push.apply(this._array, arguments);
+		return this;
+	},
+
+	remove: function() {
+		this._array.splice.apply(this._array, arguments);
+		return this;
+	},
+
+	reverse: function() {
+		this._array.reverse();
+		return this;
+	},
+
+	shift: function() {
+		return this._array.shift();
+	},
+
+	sort: function() {
+		this._array.sort.apply(this._array, arguments);
+		return this;
+	},
+
+	slice: function() {
+		return this._array.slice.apply(this._array, arguments);
+	},
+
+	splice: function() {
+		return this._array.splice.apply(this._array, arguments);
+	},
+
+	toString: function() {
+		return this._array.toString();
+	},
+
+	unshift: function() {
+		this._array.unshift.apply(this._array, arguments);
+		return this;
+	},
+
+	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+	every: function() {
+		return this._useNativeOrWrapper('every', arguments);
+	},
+
+	filter: function() {
+		return this._useNativeOrWrapper('filter', arguments);
+	},
+
+	forEach: function() {
+		return this._useNativeOrWrapper('forEach', arguments);
+	},
+
+	indexOf: function() {
+		return this._useNativeOrWrapper('indexOf', arguments);
+	},
+
+	lastIndexOf: function() {
+		return this._useNativeOrWrapper('lastIndexOf', arguments);
+	},
+
+	map: function() {
+		return this._useNativeOrWrapper('map', arguments);
+	},
+
+	reduce: function() {
+		return this._useNativeOrWrapper('reduce', arguments);
+	},
+
+	reduceRight: function() {
+		return this._useNativeOrWrapper('reduceRight', arguments);
+	},
+
+	some: function() {
+		return this._useNativeOrWrapper('some', arguments);
+	},
+
+	_useNativeOrWrapper: function(func, args) {
+		if (Array.prototype[func]) {
+			return this._array[func].apply(this._array, args);
+		} else {
+			return this['_'+func].apply(this, args);
+		}
+	},
+
+	_indexOf: function(searchElement, fromIndex) {
+		this._findIndexOf(searchElement, fromIndex, +1);
+	},
+
+	_lastIndexOf: function(searchElement, fromIndex) {
+		this._findIndexOf(searchElement, fromIndex, -1);
+	},
+
+	_findIndexOf: function(searchElement, fromIndex, direction) {
+		var length = this._array.length;
+		var index = (fromIndex >= 0) ? fromIndex : Math.max(length + fromIndex, 0);
+		while(0 <= index && index < length) {
+			if (index in this._array && this._array[index] === searchElement) return index;
+			index += direction;
+		}
+		return -1;
+	},
+
+	_filter: function(callbackFunction, thisContext) {
+		if (typeof callbackFunction !== "function")
+			throw new TypeError();
+		var filteredArray = [];
+		this._eachWhileTrue(function(index) {
+			var valueBeforeCall = this._array[index];
+			if (callbackFunction.call(thisContext, this._array[index], index, this._array))
+				filteredArray.push(valueBeforeCall);
+			return true;
+		});
+		return filteredArray;
+	},
+
+	_forEach: function(callbackFunction, thisContext) {
+		if (typeof callbackFunction !== "function")
+			throw new TypeError();
+		this._eachWhileTrue(function(index) {
+			callbackFunction.call(thisContext, this._array[index], index, this._array);
+			return true;
+		});
+	},
+
+	_every: function(callbackFunction, thisContext) {
+		if (typeof callbackFunction !== "function")
+			throw new TypeError();
+		var firstFalseIndex = this._eachWhileTrue(function(index) {
+			return callbackFunction.call(thisContext, this._array[index], index, this._array);
+		});
+		return (firstFalseIndex == -1);
+	},
+
+	_map: function(callbackFunction, thisContext) {
+		if (typeof callbackFunction !== "function")
+			throw new TypeError();
+		var mappedArray = new Array(this._array.length);
+		this._eachWhileTrue(function(index) {
+			mappedArray[index] = callbackFunction.call(
+				thisContext, this._array[index], index, this._array
+			);
+			return true;
+		});
+		return mappedArray;
+	},
+
+	_some: function(callbackFunction, thisContext) {
+		if (typeof callbackFunction !== "function")
+			throw new TypeError();
+		var firstTrueIndex = this._eachWhileTrue(function(index) {
+			 return !callbackFunction.call(thisContext, this._array[index], index, this._array);
+		});
+		return (firstTrueIndex != -1);
+	},
+
+	_reduce: function(callbackFunction, initialValue) {
+		this._reduceFromDirection(callbackFunction, initialValue, +1);
+	},
+
+	_reduceRight: function(callbackFunction, initialValue) {
+		this._reduceFromDirection(callbackFunction, initialValue, -1);
+	},
+
+	_reduceFromDirection: function(callbackFunction, initialValue, direction) {
+		var length = this._array.length;
+		var accumulator;
+		var index = (direction == -1) ? length-1 : 0;
+		if (initialValue) {
+			accumulator = initialValue;
+		} else {
+			do {
+				if (index in this._array) break;
+				index += direction;
+				if (index < 0 || index >= length) throw new TypeError();
+			} while(true);
+			accumulator = this._array[index];
+		}
+		while (0 <= index && index < length) {
+			if (index in this._array)
+				accumulator = callbackFunction.call(
+					undefined, accumulator, this._array[index], index, this._array
+				);
+			index += direction;
+		}
+		return -1;
+	},
+
+	_eachWhileTrue: function(func) {
+		var length = this._array.length;
+		for (var index = 0; index < length; index++) {
+			if (index in this._array) {
+				if (!func.call(this, index)) break;
+			}
+		}
+		return (index == length) ? -1 : index;
+	}
+});
+
 kiso.data = kiso.data || {};
+
 kiso.data.IDeque = kiso.Interface([
 	'pushHead',
 	'pushTail',
@@ -224,6 +451,7 @@ kiso.data.IDeque = kiso.Interface([
 	'getHeadData',
 	'getTailData'
 ]);
+
 kiso.data.ILinkedList = kiso.Interface([
 	'addFirst',
 	'addLast',
@@ -234,6 +462,7 @@ kiso.data.ILinkedList = kiso.Interface([
 	'removeLast',
 	'getData'
 ]);
+
 kiso.data.IListIterator = kiso.Interface([
 	'addAfter',
 	'addBefore',
@@ -246,6 +475,7 @@ kiso.data.IListIterator = kiso.Interface([
 	'getData',
 	'setData'
 ]);
+
 kiso.data.ITree = kiso.Interface([
 	'addChild',
 	'getChild',
@@ -259,6 +489,7 @@ kiso.data.ITree = kiso.Interface([
 	'isRoot',
 	'isEmpty'
 ]);
+
 kiso.data.AbstractList = kiso.Class({
 	_last: null,
 	_first: null,
@@ -337,128 +568,7 @@ kiso.data.AbstractList = kiso.Class({
 		};
 	}
 });
-kiso.data = kiso.data || {};
-kiso.data.IDeque = kiso.Interface([
-	'pushHead',
-	'pushTail',
-	'popHead',
-	'popTail',
-	'getHeadData',
-	'getTailData'
-]);
-kiso.data.ILinkedList = kiso.Interface([
-	'addFirst',
-	'addLast',
-	'addBefore',
-	'addAfter',
-	'remove',
-	'removeFirst',
-	'removeLast',
-	'getData'
-]);
-kiso.data.IListIterator = kiso.Interface([
-	'addAfter',
-	'addBefore',
-	'hasNext',
-	'hasPrevious',
-	'getIndex',
-	'gotoNext',
-	'gotoPrevious',
-	'remove',
-	'getData',
-	'setData'
-]);
-kiso.data.ITree = kiso.Interface([
-	'addChild',
-	'getChild',
-	'getChildCount',
-	'removeChild',
-	'getParent',
-	'getData',
-	'setData',
-	'purgeData',
-	'isLeaf',
-	'isRoot',
-	'isEmpty'
-]);
-kiso.data.AbstractList = kiso.Class({
-	_last: null,
-	_first: null,
-	_size: 0,
-	
-	initialize: function() {
-		this._last = this._newNode();
-		this._first = this._newNode();
-		this._last._prev = this._first;
-		this._first._next = this._last;
-		this._size = 0;
-	},
-	
-	getSize: function() {
-		return this._size;
-	},
-	
-	isEmpty: function() {
-		return (this._size == 0);
-	},
-	
-	toArray: function() {
-		var arrayOut = new Array();
-		var node = this._first._next;
-		while (node != this._last) {
-			arrayOut.push(node._data);
-			node = node._next;
-		}
-		return arrayOut;
-	},
-	
-	_addBefore: function(node, data) {
-		var newNode = this._newNode(data);
-		newNode._prev = node._prev;
-		node._prev = newNode;
-		newNode._next = node;
-		newNode._prev._next = newNode;
-		this._size++;		
-	},
-	
-	_addAfter: function(node, data) {
-		var newNode = this._newNode(data);
-		newNode._next = node._next;
-		node._next = newNode;
-		newNode._prev = node;
-		newNode._next._prev = newNode;
-		this._size++;
-	},
-	
-	_removeNode: function(node) {
-		node._prev._next = node._next;
-		node._next._prev = node._prev;
-		this._size--;
-		return node._data;
-	},
-	
-	_getNode: function(index) {
-		if (index < 0 || index >= this._size) {
-			throw new Error('Index out of bounds.');
-		}
-		var direction = (index*2 > this._size) ? -1 : 1;
-		var node = (direction == 1) ? this._first._next : this._last._prev;
-		var offset = (direction == 1) ? index : (this._size - index - 1);
-		while (offset > 0) {
-			node = (direction == 1) ? node._next : node._prev;
-			offset--;
-		}
-		return node;
-	},
 
-	_newNode: function(nodeData) {
-		return {
-			_data: nodeData,
-			_next: null,
-			_prev: null
-		};
-	}
-});
 kiso.data.Deque = kiso.Class(
 	{
 		parent: kiso.data.AbstractList,
@@ -496,6 +606,7 @@ kiso.data.Deque = kiso.Class(
 		}
 	}
 );
+
 kiso.data.ILinkedList = kiso.Interface([
 	'addFirst',
 	'addLast',
@@ -506,6 +617,7 @@ kiso.data.ILinkedList = kiso.Interface([
 	'removeLast',
 	'getData'
 ]);
+
 kiso.data.LinkedList = kiso.Class(
 	{
 		parent: kiso.data.AbstractList,
@@ -551,6 +663,7 @@ kiso.data.LinkedList = kiso.Class(
 		}
 	}
 );
+
 kiso.data.ListIterator = kiso.Class(
 	{
 		constants: {
@@ -633,7 +746,8 @@ kiso.data.ListIterator = kiso.Class(
 			this._currentNode._data = data;
 		}
 	}
-);kiso.data.Tree = kiso.Class(
+);
+kiso.data.Tree = kiso.Class(
 	{
 		interfaces: kiso.data.ITree
 	},
@@ -716,12 +830,15 @@ kiso.data.ListIterator = kiso.Class(
 		}
 	}
 );
+
 kiso.geom = kiso.geom || {};
+
 kiso.geom.IConvexHull = kiso.Interface([
 	'setPoints',
 	'getHullIndexes',
 	'build'
 ]);
+
 kiso.geom.IPolyApproximator = kiso.Interface([
 	'setPoints',
 	'setTolerance',
@@ -729,6 +846,7 @@ kiso.geom.IPolyApproximator = kiso.Interface([
 	'build',
 	'getIndexes'
 ]);
+
 kiso.geom.SimplePolyConvexHull = kiso.Class(
 	{
 		interfaces: kiso.geom.IConvexHull,
@@ -853,6 +971,7 @@ kiso.geom.SimplePolyConvexHull = kiso.Class(
 		}
 	}
 );
+
 kiso.geom.SimplePolyApproximatorDP = kiso.Class(
 	{
 		interfaces: kiso.geom.IPolyApproximator
@@ -967,6 +1086,7 @@ kiso.geom.SimplePolyApproximatorDP = kiso.Class(
 		}
 	}
 );
+
 kiso.geom.Point = kiso.Class({
 	_x: 0,
 	_y: 0,
@@ -1045,7 +1165,8 @@ kiso.geom.Point = kiso.Class({
 	distanceToLine: function(point0, point1) {
 		return Math.sqrt(this.distanceSquaredToLine(point0, point1));
 	}
-});kiso.geom.ReducibleSimplePolyConvexHull = kiso.Class(
+});
+kiso.geom.ReducibleSimplePolyConvexHull = kiso.Class(
 	{
 		parent: kiso.geom.SimplePolyConvexHull,
 		constants: {
@@ -1173,7 +1294,8 @@ kiso.geom.Point = kiso.Class({
 			}
 		}
 	}
-);kiso.geom.SimplePolyApproximatorHS = kiso.Class(
+);
+kiso.geom.SimplePolyApproximatorHS = kiso.Class(
 	{
 		parent: kiso.geom.SimplePolyApproximatorDP
 	},
@@ -1337,7 +1459,9 @@ kiso.geom.Point = kiso.Class({
 		}
 	}
 );
-kiso.ui = kiso.ui || {};kiso.ui.CookieAdapter = kiso.Class({
+
+kiso.ui = kiso.ui || {};
+kiso.ui.CookieAdapter = kiso.Class({
 	_MS_PER_DAY: 60 * 60 * 24 * 1000,
 
 	setCookie: function(cookieName, cookieValue, daysOrObject) {
@@ -1409,3 +1533,4 @@ kiso.ui = kiso.ui || {};kiso.ui.CookieAdapter = kiso.Class({
   	return document.cookie;
   }
 });
+

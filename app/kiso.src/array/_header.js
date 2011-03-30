@@ -1,0 +1,1 @@
+kiso.array = kiso.array || {};
