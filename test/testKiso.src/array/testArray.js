@@ -1,37 +1,190 @@
 unittest.array.testArray = function() {
-	module('kiso.array.Array Tests');
+	module('kiso.array Standard Tests');
 
-	test('Standard Functions', function() {
-		var testArray = new kiso.array.Array([1,2,3,4,5,6]);
-		expect(11);
-		equal(testArray.concat([7,8,9]).toString(), '1,2,3,4,5,6,7,8,9');
-		equal(testArray.join('+'), '1+2+3+4+5+6');
-		equal(testArray.pop(), 6);
-		equal(testArray.push(7,8,9,0).toString(), '1,2,3,4,5,7,8,9,0');
-		equal(testArray.remove(3,2,10,11).toString(), '1,2,3,10,11,7,8,9,0')
-		equal(testArray.reverse().toString(), '0,9,8,7,11,10,3,2,1');
-		equal(testArray.shift(), 0);
-		equal(testArray.slice(-6,-3).toString(), '7,11,10');
-		equal(
-			testArray.sort(
-				function(a,b){
-					var aOdd = a%2;
-					var bOdd = b%2;
-					if (aOdd != bOdd) {return bOdd-aOdd;} else {return b-a;}
-				}
-			).toString(),
-			'11,9,7,3,1,10,8,2'
-		);
-		equal(testArray.splice(-7,2,'x','y').toString(), '9,7');
-		equal(testArray.unshift('z').toString(), 'z,11,x,y,3,1,10,8,2');
+	test('every', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+		expect(1);
+		equal(kiso.array.every(testArray, function(v, i, a) { return (v > 0); }), true);
 	});
 
-	test('indexOf', function() {
-		var testArray = new kiso.array.Array([1,2,3,4,5]);
-
+	test('filter', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
 		expect(1);
-		equal(testArray.indexOf(3), 2);
-/*
+		deepEqual(kiso.array.filter(testArray, function(v, i, a) {return (v > 4);}), [5,6,7,8,9]);
+	});
+
+	test('forEach', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+		expect(1);
+		kiso.array.forEach(testArray, function(v, i, a) {a[i] = v + 4;});
+		deepEqual(testArray, [5,6,7,8,9,10,11,12,13]);
+	});
+
+	test('(last)indexOf', function() {
+		var testArray = [1,2,3,3,3,6,7,8,9,3,0,0,0];
+		expect(2);
+		equal(kiso.array.indexOf(testArray, 3), 2);
+		equal(kiso.array.lastIndexOf(testArray, 3, -5), 4);
+	});
+
+	test('map', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+		expect(1);
+		deepEqual(
+			kiso.array.map(testArray, function(v, i, a) { if (v>6) a.push(v+20); return v+10; }),
+			[11,12,13,14,15,16,17,18,19]
+		);
+	});
+
+	test('reduce(Right)', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+		expect(2);
+		deepEqual(
+			kiso.array.reduce(testArray, function(p, c, i, a) { return p+(c%2 ? -c : c); }, 1),
+			-4
+		);
+		deepEqual(
+			kiso.array.reduceRight(testArray, function(p, c, i, a) { return p++; }),
+			9
+		);
+	});
+
+	test('some', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+		expect(1);
+		equal(kiso.array.some(testArray, function(v, i, a) { return (v > 6); }), true);
+	});
+
+
+	module('kiso.array Non-native Tests', {
+		setup: function() {
+			this.oldFunc = kiso.array._useNativeOrWrapper;
+			kiso.array._unittest = false;
+			kiso.array._useNativeOrWrapper = function(func, args) {
+				this._unittest = true;
+				return this['_'+func].apply(this, args);
+			}
+		},
+		teardown: function() {
+			kiso.array._useNativeOrWrapper = this.oldFunc;
+			delete kiso.array._unittest;
+		}
+	});
+
+	test('every', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+		var object = new (kiso.Class({
+			_acc: 0,
+			addCompare: function(v,i,a) {this._acc+=v;return (v>0)&&(a[i]==v);},
+			test: function(a) {return kiso.array.every(a, this.addCompare, this) && (this._acc==45);}
+		}))();
+
+		expect(3);
+		equal(kiso.array.every(testArray, function(v, i, a) {
+			return (v > 0);
+		}), true);
+		equal(object.test(testArray), true);
+		equal(kiso.array._unittest, true);
+	});
+
+	test('filter', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+		var object = new (kiso.Class({
+			_acc: 0,
+			addFilter: function(v,i,a) {this._acc+=v;return (v>4)&&(a[i]==v);},
+			test: function(a) {return kiso.array.filter(a, this.addFilter, this).length==5 && (this._acc==45);}
+		}))();
+
+		expect(3);
+		deepEqual(kiso.array.filter(testArray, function(v, i, a) {return (v > 4);}), [5,6,7,8,9]);
+		equal(object.test(testArray), true);
+		equal(kiso.array._unittest, true);
+	});
+
+	test('forEach', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+		var object = new (kiso.Class({
+			_acc: 0,
+			addForEach: function(v,i,a) {this._acc+=v;if (v>10) a.push(v+10);},
+			test: function(a) {kiso.array.forEach(a, this.addForEach, this);return this._acc;}
+		}))();
+
+		expect(4);
+		kiso.array.forEach(testArray, function(v, i, a) {a[i] = v + 4;});
+		deepEqual(testArray, [5,6,7,8,9,10,11,12,13]);
+		equal(object.test(testArray), 81);
+		deepEqual(testArray, [5,6,7,8,9,10,11,12,13,21,22,23]);
+		equal(kiso.array._unittest, true);
+	});
+
+	test('(last)indexOf', function() {
+		var testArray = [1,2,3,3,3,6,7,8,9,3,0,0,0];
+
+		expect(3);
+		equal(kiso.array.indexOf(testArray, 3), 2);
+		equal(kiso.array.lastIndexOf(testArray, 3, -5), 4);
+		equal(kiso.array._unittest, true);
+	});
+
+	test('map', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+		var object = new (kiso.Class({
+			_acc: 0,
+			map: function(v,i,a) {return v+10;},
+			test: function(a) {return kiso.array.map(a, this.map, this);}
+		}))();
+
+		expect(3);
+		deepEqual(
+			kiso.array.map(testArray, function(v, i, a) {if (v>6) a.push(v+20);return v+10;}),
+			[11,12,13,14,15,16,17,18,19]
+		);
+		deepEqual(object.test(testArray), [11,12,13,14,15,16,17,18,19,37,38,39]);
+		equal(kiso.array._unittest, true);
+	});
+
+	test('reduce(Right)', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+
+		expect(4);
+		equal(
+			kiso.array.reduce(testArray, function(p, c, i, a) { return p+(c%2 ? -c : c); }),
+			-3
+		);
+		deepEqual(
+			kiso.array.reduce(testArray,
+				function(p, c, i, a) { (i==0 ? p[i]=c : p[i] = p[i-1] + c); return p; },
+				[]
+			),
+			[1,3,6,10,15,21,28,36,45]
+		);
+		deepEqual(
+			kiso.array.reduceRight(testArray,
+				function(p, c, i, a) { p[0] += c; p[i+1] = a[i]+i; return p; },
+				[1]
+			),
+			[46,1,3,5,7,9,11,13,15,17]
+		);
+		equal(kiso.array._unittest, true);
+	});
+
+	test('some', function() {
+		var testArray = [1,2,3,4,5,6,7,8,9];
+		var object = new (kiso.Class({
+			_acc: 0,
+			addCompare: function(v,i,a) {this._acc+=v; return v>4;},
+			test: function(a) {return kiso.array.some(a, this.addCompare, this) && (this._acc==15);}
+		}))();
+
+		expect(3);
+		equal(kiso.array.some(testArray, function(v, i, a) {
+			return (v > 6);
+		}), true);
+		equal(object.test(testArray), true);
+		equal(kiso.array._unittest, true);
+	});
+
+	/*
 		var a = new Array(0,1,2,3,4,5,6,7,8,9);
 		var b = new kiso.array.Array(a);
 		var d = new Date();
@@ -49,17 +202,4 @@ unittest.array.testArray = function() {
 		equal(0,t1,'Native');
 		equal(0,t2,'Kiso');
 */
-	});
-
-	/*
-every
-filter
-forEach
-indexOf
-lastIndexOf
-map
-reduce
-reduceRight
-some
-	 */
 };

@@ -221,68 +221,7 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 
 kiso.array = kiso.array || {};
 
-kiso.array.Array = kiso.Class({
-	_array: null,
-
-	initialize: function(useArray) {
-		this._array = (useArray)? useArray : new Array();
-	},
-
-	concat: function() {
-		return this._array.concat.apply(this._array, arguments);
-	},
-
-	join: function() {
-		return this._array.join.apply(this._array, arguments);
-	},
-
-	pop: function() {
-		return this._array.pop();
-	},
-
-	push: function() {
-		this._array.push.apply(this._array, arguments);
-		return this;
-	},
-
-	remove: function() {
-		this._array.splice.apply(this._array, arguments);
-		return this;
-	},
-
-	reverse: function() {
-		this._array.reverse();
-		return this;
-	},
-
-	shift: function() {
-		return this._array.shift();
-	},
-
-	sort: function() {
-		this._array.sort.apply(this._array, arguments);
-		return this;
-	},
-
-	slice: function() {
-		return this._array.slice.apply(this._array, arguments);
-	},
-
-	splice: function() {
-		return this._array.splice.apply(this._array, arguments);
-	},
-
-	toString: function() {
-		return this._array.toString();
-	},
-
-	unshift: function() {
-		this._array.unshift.apply(this._array, arguments);
-		return this;
-	},
-
-	// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
+kiso.array = new (kiso.Class({
 	every: function() {
 		return this._useNativeOrWrapper('every', arguments);
 	},
@@ -321,125 +260,117 @@ kiso.array.Array = kiso.Class({
 
 	_useNativeOrWrapper: function(func, args) {
 		if (Array.prototype[func]) {
-			return this._array[func].apply(this._array, args);
+			var theArray = Array.prototype.shift.call(args);
+			return Array.prototype[func].apply(theArray, args);
 		} else {
 			return this['_'+func].apply(this, args);
 		}
 	},
 
-	_indexOf: function(searchElement, fromIndex) {
-		this._findIndexOf(searchElement, fromIndex, +1);
-	},
-
-	_lastIndexOf: function(searchElement, fromIndex) {
-		this._findIndexOf(searchElement, fromIndex, -1);
-	},
-
-	_findIndexOf: function(searchElement, fromIndex, direction) {
-		var length = this._array.length;
-		var index = (fromIndex >= 0) ? fromIndex : Math.max(length + fromIndex, 0);
-		while(0 <= index && index < length) {
-			if (index in this._array && this._array[index] === searchElement) return index;
-			index += direction;
+	_every: function(theArray, callbackFunction, thisContext) {
+		if (typeof callbackFunction !== "function") throw new TypeError();
+		var length = theArray.length;
+		for (var index = 0; index < length; index++) {
+			if (index in theArray) {
+				if (!callbackFunction.call(thisContext, theArray[index], index, theArray)) break;
+			}
 		}
-		return -1;
+		return (index == length);
 	},
 
-	_filter: function(callbackFunction, thisContext) {
-		if (typeof callbackFunction !== "function")
-			throw new TypeError();
+	_forEach: function(theArray, callbackFunction, thisContext) {
+		if (typeof callbackFunction !== "function") throw new TypeError();
+		var length = theArray.length;
+		for (var index = 0; index < length; index++) {
+			callbackFunction.call(thisContext, theArray[index], index, theArray);
+		}
+	},
+
+	_filter: function(theArray, callbackFunction, thisContext) {
+		if (typeof callbackFunction !== "function") throw new TypeError();
 		var filteredArray = [];
-		this._eachWhileTrue(function(index) {
-			var valueBeforeCall = this._array[index];
-			if (callbackFunction.call(thisContext, this._array[index], index, this._array))
+		var length = theArray.length;
+		for (var index = 0; index < length; index++) {
+			var valueBeforeCall = theArray[index];
+			if (callbackFunction.call(thisContext, theArray[index], index, theArray))
 				filteredArray.push(valueBeforeCall);
-			return true;
-		});
+		}
 		return filteredArray;
 	},
 
-	_forEach: function(callbackFunction, thisContext) {
-		if (typeof callbackFunction !== "function")
-			throw new TypeError();
-		this._eachWhileTrue(function(index) {
-			callbackFunction.call(thisContext, this._array[index], index, this._array);
-			return true;
-		});
+	_indexOf: function(theArray, searchElement, fromIndex) {
+		return this._findIndexOf(theArray, searchElement, fromIndex, +1);
 	},
 
-	_every: function(callbackFunction, thisContext) {
-		if (typeof callbackFunction !== "function")
-			throw new TypeError();
-		var firstFalseIndex = this._eachWhileTrue(function(index) {
-			return callbackFunction.call(thisContext, this._array[index], index, this._array);
-		});
-		return (firstFalseIndex == -1);
+	_lastIndexOf: function(theArray, searchElement, fromIndex) {
+		return this._findIndexOf(theArray, searchElement, fromIndex, -1);
 	},
 
-	_map: function(callbackFunction, thisContext) {
-		if (typeof callbackFunction !== "function")
-			throw new TypeError();
-		var mappedArray = new Array(this._array.length);
-		this._eachWhileTrue(function(index) {
-			mappedArray[index] = callbackFunction.call(
-				thisContext, this._array[index], index, this._array
-			);
-			return true;
-		});
-		return mappedArray;
-	},
-
-	_some: function(callbackFunction, thisContext) {
-		if (typeof callbackFunction !== "function")
-			throw new TypeError();
-		var firstTrueIndex = this._eachWhileTrue(function(index) {
-			 return !callbackFunction.call(thisContext, this._array[index], index, this._array);
-		});
-		return (firstTrueIndex != -1);
-	},
-
-	_reduce: function(callbackFunction, initialValue) {
-		this._reduceFromDirection(callbackFunction, initialValue, +1);
-	},
-
-	_reduceRight: function(callbackFunction, initialValue) {
-		this._reduceFromDirection(callbackFunction, initialValue, -1);
-	},
-
-	_reduceFromDirection: function(callbackFunction, initialValue, direction) {
-		var length = this._array.length;
-		var accumulator;
-		var index = (direction == -1) ? length-1 : 0;
-		if (initialValue) {
-			accumulator = initialValue;
-		} else {
-			do {
-				if (index in this._array) break;
-				index += direction;
-				if (index < 0 || index >= length) throw new TypeError();
-			} while(true);
-			accumulator = this._array[index];
-		}
-		while (0 <= index && index < length) {
-			if (index in this._array)
-				accumulator = callbackFunction.call(
-					undefined, accumulator, this._array[index], index, this._array
-				);
+	_findIndexOf: function(theArray, searchElement, fromIndex, direction) {
+		var length = theArray.length;
+		var index = (typeof fromIndex == 'undefined') ? 0 : (
+			(fromIndex >= 0) ? fromIndex : Math.max(length + fromIndex, 0)
+		);
+		while(0 <= index && index < length) {
+			if (index in theArray && theArray[index] === searchElement) return index;
 			index += direction;
 		}
 		return -1;
 	},
 
-	_eachWhileTrue: function(func) {
-		var length = this._array.length;
+	_map: function(theArray, callbackFunction, thisContext) {
+		if (typeof callbackFunction !== "function") throw new TypeError();
+		var length = theArray.length;
+		var mappedArray = new Array(length);
 		for (var index = 0; index < length; index++) {
-			if (index in this._array) {
-				if (!func.call(this, index)) break;
-			}
+			mappedArray[index] = callbackFunction.call(thisContext, theArray[index], index, theArray);
 		}
-		return (index == length) ? -1 : index;
+		return mappedArray;
+	},
+
+	_some: function(theArray, callbackFunction, thisContext) {
+		if (typeof callbackFunction !== "function") throw new TypeError();
+		var length = theArray.length;
+		for (var index = 0; index < length; index++) {
+			if (callbackFunction.call(thisContext, theArray[index], index, theArray)) break;
+		}
+		return (index != length);
+	},
+
+	_reduce: function(theArray, callbackFunction, initialValue) {
+		return this._reduceFromDirection(theArray, callbackFunction, initialValue, +1);
+	},
+
+	_reduceRight: function(theArray, callbackFunction, initialValue) {
+		return this._reduceFromDirection(theArray, callbackFunction, initialValue, -1);
+	},
+
+	_reduceFromDirection: function(theArray, callbackFunction, initialValue, direction) {
+		var length = theArray.length;
+		var accumulator;
+		var index = (direction == -1) ? length-1 : 0;
+		//initialValue = (typeof initialValue != 'undefined') ? initialValue : 0;
+		if (typeof initialValue != 'undefined') {
+			accumulator = initialValue;
+		} else {
+			do {
+				if (index in theArray) break;
+				index += direction;
+				if (index < 0 || index >= length) throw new TypeError();
+			} while(true);
+			accumulator = theArray[index];
+			index += direction;
+		}
+		while (0 <= index && index < length) {
+			if (index in theArray)
+				accumulator = callbackFunction.call(
+					undefined, accumulator, theArray[index], index, theArray
+				);
+			index += direction;
+		}
+		return accumulator;
 	}
-});
+}))();
 
 kiso.data = kiso.data || {};
 
