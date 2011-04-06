@@ -15,9 +15,9 @@
       <fileset dir="${kiso.dir}/${kiso.file}.src/array" includes="*.js" excludes="_header.js"/>
 
 			<filelist dir="${kiso.dir}/${kiso.file}.src/data"
-				files="_header.js,IDeque.js,IlinkedList.js,IListIterator.js,ITree.js,AbstractList.js" />
+				files="_header.js,IDeque.js,ILinkedList.js,IListIterator.js,ITree.js,AbstractList.js" />
       <fileset dir="${kiso.dir}/${kiso.file}.src/data" includes="*.js"
-				excludes="_header.js,IDeque.js,IlinkedList.js,IListIterator.js,ITree.js,AbstractList.js" />
+				excludes="_header.js,IDeque.js,ILinkedList.js,IListIterator.js,ITree.js,AbstractList.js" />
 
 			<filelist dir="${kiso.dir}/${kiso.file}.src/geom"
 				files="_header.js,IConvexHull.js,IPolyApproximator.js,SimplePolyConvexHull.js,SimplePolyApproximatorDP.js"/>

@@ -23,8 +23,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-/** @namespace */
+/**
+ * @namespace kiso
+ * @description  Contains the core functions <code>Class</code> and <code>Interface</code> along
+ *   with all sub-namespaces of the Kiso library.
+ * @author Brett Pontarelli (www.github.com/brettwp/Kiso)
+ * @version 0.3.0
+ */
 this.kiso = this.kiso || {};
+/** @ignore */
 kiso.VERSION = '0.3.0';
 
 /**
@@ -35,6 +42,8 @@ kiso.VERSION = '0.3.0';
  * There are two basic ways to create and interface:
  * 1) Interface([...]) - An array of strings for the required methods of the interface
  * 2) Interface(parent, [...]) - The parent interface and an array of strings to extend the parent.
+ *
+ * @returns {Interface} A new interface
  */
 kiso.Interface = function(parentInterface, methods) {
   return create(parentInterface, methods);
@@ -68,122 +77,142 @@ kiso.Interface = function(parentInterface, methods) {
 
 /**
  * @description Creates a new class.
- * @param {Class|Object} parentClassOrObj The parent class, an object of parameters, or the class definition object.
- * @param childDefinition The class definition object when the first arguments is an object
+ * @param {Class|Object} parentClassOrObj The parent class, an object of parameters (see paramObj) or the class definition object (see classObj).
+ * @param {Object} childDefinition The class definition object (see classObj) when the first arguments is an object.
  *
  * There are three basic ways to instantiate a class:
- * 1) Class({...}) - A base class
- * 2) Class(parentClass, {...}) - A sub-class that inherits from a parent class.
- * 3) Class({...}, {...}) - The second argument is the class definition while the first contains one or more of the following: parent, constants, interfaces
- *    Full usage of the 3 case might look like this:
- *    kiso.Class(
- *			{
- *				parent: someParent,
- *				interfaces: [a single interface or an array of interfaces],
- *				constants: {an object of constant names and values}
- *			},
- *			{...}
- *		)
+ * <ol>
+ *   <li><code>Class(classObject)</code> - A base class.</li>
+ *   <li><code>Class(parentClass, classObject)</code> - A sub-class that inherits from a parent class.</li>
+ *   <li><code>Class(paramObject, classObject)</code> - A base or sub-class that uses a paramObject.</li>
+ * </ol>
+ * A <code>parentClass</code> is any class created by a previous call to <code>kiso.Class</code> where the
+ * <code>paramObject</code> and <code>classObject</code> are defined as follows.
  *
- *		Note that constants are attached to the function, so for a class defined roughly like this:
- *		  var example = kiso.Class({ constants: { ONE:1, TWO:2 } }, {...});
- *		the constants will be like this:
- *		  example.ONE == 1
- *		  example.TWO == 2
+ * <dl>
+ *   <dt><strong><code>paramObject</code></strong><dt>
+ *   <dd>Contains atleast one of the following:
+ * <pre>{
+ *   parent: parentClass,
+ *   interfaces: [a single interface or an array of interfaces],
+ *   constants: {an object of constant names and values}
+ * }</pre>
+ *     <p>Note that constants are attached to the class.  For example a class defined like,<p>
+ *     <pre>  var example = kiso.Class({ constants: { ONE:1, TWO:2 } }, {...});</pre>
+ *     <p>the constants will be</p>
+ *     <pre>
+ *   example.ONE == 1
+ *   example.TWO == 2
+ *     </pre>
+ *   </dd>
+ *
+ *   <dt><strong><code>classObject</code></strong></dt>
+ *   <dd>An object of variables and methods (using <code>initialize</code> for the constructor):
+ * <pre>{
+ *   variable1: 1,
+ *   variable2: 2,
+ *   initialize: funciton(...) {...},
+ *   method1: funciton(...) {...},
+ *   method2: funciton(...) {...}
+ * }</pre>
+ *   </dd>
+ * </dl>
+ *
+ * @returns {Class} A new class
  */
 kiso.Class = function(parentClassOrObj, childDefinition) {
-	return create(parentClassOrObj, childDefinition);
+  return create(parentClassOrObj, childDefinition);
 
-	function create(parentClassOrObj, childDefinition) {
+  function create(parentClassOrObj, childDefinition) {
     var interfaces = null;
-		var constants = null;
+    var constants = null;
     var parentClass = null;
-		if (childDefinition == undefined) {
-			childDefinition = parentClassOrObj;
-		} else if (typeof parentClassOrObj == 'object') {
-			if (parentClassOrObj.hasOwnProperty('parent') && !parentClassOrObj.parent) {
-				throw new Error('Parent class undefined.');
-			} else {
-				parentClass = parentClassOrObj.parent;
-			}
-			if (parentClassOrObj.hasOwnProperty('interfaces') && !parentClassOrObj.interfaces) {
-				throw new Error('Interface undefined.');
-			} else {
-				interfaces = parentClassOrObj.interfaces;
-			}
-			constants = parentClassOrObj.constants;
+    if (childDefinition == undefined) {
+      childDefinition = parentClassOrObj;
+    } else if (typeof parentClassOrObj == 'object') {
+      if (parentClassOrObj.hasOwnProperty('parent') && !parentClassOrObj.parent) {
+        throw new Error('Parent class undefined.');
+      } else {
+        parentClass = parentClassOrObj.parent;
+      }
+      if (parentClassOrObj.hasOwnProperty('interfaces') && !parentClassOrObj.interfaces) {
+        throw new Error('Interface undefined.');
+      } else {
+        interfaces = parentClassOrObj.interfaces;
+      }
+      constants = parentClassOrObj.constants;
     } else if (parentClassOrObj) {
-			parentClass = parentClassOrObj;
-		} else {
-			throw new Error('Parent class undefined.');
+      parentClass = parentClassOrObj;
+    } else {
+      throw new Error('Parent class undefined.');
     }
-		var newClass = function() {
-			createUniqueInstanceVariables(this);
-			if (this.__superclass) this.superclass = new this.__superclass(this);
-			if (this.initialize) this.initialize.apply(this, arguments);
-		};
-		setupClassFromParent(newClass, parentClass);
-		extendClassMembers(newClass, childDefinition);
+    var newClass = function() {
+      createUniqueInstanceVariables(this);
+      if (this.__superclass) this.superclass = new this.__superclass(this);
+      if (this.initialize) this.initialize.apply(this, arguments);
+    };
+    setupClassFromParent(newClass, parentClass);
+    extendClassMembers(newClass, childDefinition);
     extendClassInterfaces(newClass, interfaces);
     ensureImplementsInterfaces(newClass);
-		setupClassConstants(newClass, constants);
-		return newClass;
-	}
+    setupClassConstants(newClass, constants);
+    return newClass;
+  }
 
-	function createUniqueInstanceVariables(obj) {
-		for (var prop in obj) {
-			if (prop != '__superclass') {
-				if (obj[prop] != null &&
-					typeof obj[prop] == 'object') obj[prop] = clone(obj[prop]);
-			}
-		}
-	}
+  function createUniqueInstanceVariables(obj) {
+    for (var prop in obj) {
+      if (prop != '__superclass') {
+        if (obj[prop] != null &&
+          typeof obj[prop] == 'object') obj[prop] = clone(obj[prop]);
+      }
+    }
+  }
 
-	function clone(oldObj) {
-	  var newObj = (oldObj instanceof Array) ? [] : {};
-	  for (var prop in oldObj) {
-	    if (typeof oldObj[prop] == 'object') {
-	      newObj[prop] = clone(oldObj[prop]);
-	    } else {
-	    	newObj[prop] = oldObj[prop];
-	    }
-	  }
-	  return newObj;
-	}
+  function clone(oldObj) {
+    var newObj = (oldObj instanceof Array) ? [] : {};
+    for (var prop in oldObj) {
+      if (typeof oldObj[prop] == 'object') {
+        newObj[prop] = clone(oldObj[prop]);
+      } else {
+        newObj[prop] = oldObj[prop];
+      }
+    }
+    return newObj;
+  }
 
-	function setupClassFromParent(newClass, parentClass) {
-		if (parentClass) {
-			var func = function() {};
-			func.prototype = parentClass.prototype;
-			newClass.prototype = new func();
-			newClass.prototype.__superclass = function(subObject) {
-				this._subObject = subObject;
-				this._parentClass = parentClass.prototype;
-			};
-			setupClassConstants(newClass, parentClass);
-		}
-	}
+  function setupClassFromParent(newClass, parentClass) {
+    if (parentClass) {
+      var func = function() {};
+      func.prototype = parentClass.prototype;
+      newClass.prototype = new func();
+      newClass.prototype.__superclass = function(subObject) {
+        this._subObject = subObject;
+        this._parentClass = parentClass.prototype;
+      };
+      setupClassConstants(newClass, parentClass);
+    }
+  }
 
   function extendClassMembers(newClass, extension) {
-		var extObj, prop;
-		if (typeof extension == 'function') {
-			extObj = extension.prototype;
-		} else {
-			extObj = extension
-		}
-		for (prop in extObj) {
-			if (newClass.prototype.__superclass &&
-					newClass.prototype[prop] && typeof newClass.prototype[prop] == 'function') {
-				newClass.prototype.__superclass.prototype[prop] = wrapParentFunction(prop);
-			}
-			newClass.prototype[prop] = extObj[prop];
-		}
-	}
+    var extObj, prop;
+    if (typeof extension == 'function') {
+      extObj = extension.prototype;
+    } else {
+      extObj = extension
+    }
+    for (prop in extObj) {
+      if (newClass.prototype.__superclass &&
+          newClass.prototype[prop] && typeof newClass.prototype[prop] == 'function') {
+        newClass.prototype.__superclass.prototype[prop] = wrapParentFunction(prop);
+      }
+      newClass.prototype[prop] = extObj[prop];
+    }
+  }
 
-	function wrapParentFunction(superFunc) {
-		var sFunc = superFunc;
-		return function() { return this._parentClass[sFunc].apply(this._subObject,arguments) }
-	}
+  function wrapParentFunction(superFunc) {
+    var sFunc = superFunc;
+    return function() { return this._parentClass[sFunc].apply(this._subObject,arguments) }
+  }
 
   function extendClassInterfaces(newClass, interfaces) {
     if (interfaces) {
@@ -197,7 +226,7 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
 
   function ensureImplementsInterfaces(testClass) {
     if (testClass.__interfaces) {
-			var index;
+      var index;
       var methods = [];
       for (index in testClass.__interfaces) {
         methods = methods.concat(testClass.__interfaces[index].getMethods());
@@ -210,170 +239,278 @@ kiso.Class = function(parentClassOrObj, childDefinition) {
     }
   }
 
-	function setupClassConstants(newClass, constants) {
-		if (constants) {
-			for (var constKey in constants) {
-				newClass[constKey] = constants[constKey];
-			}
-		}
-	}
+  function setupClassConstants(newClass, constants) {
+    if (constants) {
+      for (var constKey in constants) {
+        newClass[constKey] = constants[constKey];
+      }
+    }
+  }
 };
 
 kiso.array = kiso.array || {};
 
-kiso.array = new (kiso.Class({
-	every: function() {
-		return this._useNativeOrWrapper('every', arguments);
-	},
+/**
+ * @class
+ * @description A singleton of extended array functions.
+ *
+ * Methods of <code>kiso.array</code> allow for cross browser implementation of some common array
+ * manipulations.  Each function will execute using native browser array functions in those browsers
+ * that implements them and will fall back on javascript implementaions in those browsers that
+ * don't.
+ */
+kiso.array = new (kiso.Class(/** @lends kiso.array */{
+  /**
+   * @description Tests whether all elements in the array pass the test implemented by the provided function.
+   *   Calls to the callback function are passed three values:
+   *   <code>value, index, theArray</code> such that <code>theArray[index] == value</code>
+   * @param {Array} theArray An array.
+   * @param {Function} callback Function to test for each element.
+   * @param {Object} [thisObject] Object to use as this when executing callback.
+   * @returns True if for every item in the array the callback function returns true.
+   */
+  every: function() {
+    return this._useNativeOrWrapper('every', arguments);
+  },
 
-	filter: function() {
-		return this._useNativeOrWrapper('filter', arguments);
-	},
+  /**
+   * @description Creates a new array with all elements that pass the test implemented by the provided function.
+   *   Calls to the callback function are passed three values:
+   *   <code>value, index, theArray</code> such that <code>theArray[index] == value</code>
+   * @param {Array} theArray An array.
+   * @param {Function} callback Function to test each element of the array.
+   * @param {Object} [thisObject] Object to use as this when executing callback.
+   * @returns A new array
+   */
+  filter: function() {
+    return this._useNativeOrWrapper('filter', arguments);
+  },
 
-	forEach: function() {
-		return this._useNativeOrWrapper('forEach', arguments);
-	},
+  /**
+   * @description Executes a provided function once per array element.
+   *   Calls to the callback function are passed three values:
+   *   <code>value, index, theArray</code> such that <code>theArray[index] == value</code>
+   * @param {Array} theArray An array.
+   * @param {Function} callback Function to execute for each element.
+   * @param {Object} [thisObject] Object to use as this when executing callback.
+   */
+  forEach: function() {
+    return this._useNativeOrWrapper('forEach', arguments);
+  },
 
-	indexOf: function() {
-		return this._useNativeOrWrapper('indexOf', arguments);
-	},
+  /**
+   * @description Returns the first index at which a given element can be found in the array, or -1 if it is not present.
+   *   If the index is greater than or equal to the length of the array, -1 is returned, and the array is not searched. If negative, it is taken as the offset from the end of the array. Note that even when the index is negative, the array is still searched from front to back. If the calculated index is less than 0, the whole array will be searched.
+   *   Calls to the callback function are passed three values:
+   *   <code>value, index, theArray</code> such that <code>theArray[index] == value</code>
+   * @param {Array} theArray An array.
+   * @param searchElement Element to locate in the array.
+   * @param {Intger} [fromIndex=0] The index at which to begin the search.
+   * @returns {Integer} The index of the first match or -1 if it is not present.
+   */
+  indexOf: function() {
+    return this._useNativeOrWrapper('indexOf', arguments);
+  },
 
-	lastIndexOf: function() {
-		return this._useNativeOrWrapper('lastIndexOf', arguments);
-	},
+  /**
+   * @description Returns the last index at which a given element can be found in the array, or -1 if it is not present.
+   *   If the index is greater than or equal to the length of the array, the whole array will be searched. If negative, it is taken as the offset from the end of the array. Note that even when the index is negative, the array is still searched from back to front. If the calculated index is less than 0, -1 is returned, and the array is not searched.
+   *   Calls to the callback function are passed three values:
+   *   <code>value, index, theArray</code> such that <code>theArray[index] == value</code>
+   * @param {Array} theArray An array.
+   * @param searchElement Element to locate in the array.
+   * @param {Intger} [fromIndex=theArray.length] The index at which to start searching backwards.
+   * @returns {Integer} The index of the first match or -1 if it is not present.
+   */
+  lastIndexOf: function() {
+    return this._useNativeOrWrapper('lastIndexOf', arguments);
+  },
 
-	map: function() {
-		return this._useNativeOrWrapper('map', arguments);
-	},
+  /**
+   * @description Creates a new array with the results of calling a provided function on every element in this array.
+   *   Calls to the callback function are passed three values:
+   *   <code>value, index, theArray</code> such that <code>theArray[index] == value</code>
+   * @param {Array} theArray An array.
+   * @param {Function} callback A function that produces an element of the new Array from an element of the current one.
+   * @param {Object} [thisObject] Object to use as this when executing callback.
+   * @returns A new array
+   */
+  map: function() {
+    return this._useNativeOrWrapper('map', arguments);
+  },
 
-	reduce: function() {
-		return this._useNativeOrWrapper('reduce', arguments);
-	},
+  /**
+   * @description Apply a function simultaneously against two values of the array (from left-to-right) as to reduce it to a single value.
+   *   Calls to the callback function are passed four values:
+   *   <code>accumulator, value, index, theArray</code> such that <code>theArray[index] == value</code>.
+   *   The <code>accumulator</code> on the first call is the <code>initialValue</code> and on all subsequent
+   *   calls is the value returned from the last call to the callback function.
+   * @param {Array} theArray An array.
+   * @param {Function} callback Function to execute on each value in the array.
+   * @param [initialValue] The value to use as the first argument to the first call of the callback.
+   * @returns The last value returned by the callback function.
+   */
+  reduce: function() {
+    return this._useNativeOrWrapper('reduce', arguments);
+  },
 
-	reduceRight: function() {
-		return this._useNativeOrWrapper('reduceRight', arguments);
-	},
+  /**
+   * @description Apply a function simultaneously against two values of the array (from right-to-left) as to reduce it to a single value.
+   *   Calls to the callback function are passed four values:
+   *   <code>accumulator, value, index, theArray</code> such that <code>theArray[index] == value</code>.
+   *   The <code>accumulator</code> on the first call is the <code>initialValue</code> and on all subsequent
+   *   calls is the value returned from the last call to the callback function.
+   * @param {Array} theArray An array.
+   * @param {Function} callback Function to execute on each value in the array.
+   * @param [initialValue] The value to use as the first argument to the first call of the callback.
+   * @returns The last value returned by the callback function.
+   */
+  reduceRight: function() {
+    return this._useNativeOrWrapper('reduceRight', arguments);
+  },
 
-	some: function() {
-		return this._useNativeOrWrapper('some', arguments);
-	},
+  /**
+   * @description Tests whether some elements in the array pass the test implemented by the provided function.
+   *   Calls to the callback function are passed three values:
+   *   <code>value, index, theArray</code> such that <code>theArray[index] == value</code>
+   * @param {Array} theArray An array.
+   * @param {Function} callback Function to test for each element.
+   * @param {Object} [thisObject] Object to use as this when executing callback.
+   * @returns True if for any item in the array the callback function returns true.  False only if for every item in the array the callback function returns false.
+   */
+  some: function() {
+    return this._useNativeOrWrapper('some', arguments);
+  },
 
-	_useNativeOrWrapper: function(func, args) {
-		if (Array.prototype[func]) {
-			var theArray = Array.prototype.shift.call(args);
-			return Array.prototype[func].apply(theArray, args);
-		} else {
-			return this['_'+func].apply(this, args);
-		}
-	},
+  _useNativeOrWrapper: function(func, args) {
+    if (Array.prototype[func]) {
+      var theArray = Array.prototype.shift.call(args);
+      return Array.prototype[func].apply(theArray, args);
+    } else {
+      return this['_'+func].apply(this, args);
+    }
+  },
 
-	_every: function(theArray, callbackFunction, thisContext) {
-		if (typeof callbackFunction !== "function") throw new TypeError();
-		var length = theArray.length;
-		for (var index = 0; index < length; index++) {
-			if (index in theArray) {
-				if (!callbackFunction.call(thisContext, theArray[index], index, theArray)) break;
-			}
-		}
-		return (index == length);
-	},
+  _every: function(theArray, callbackFunction, thisContext) {
+    if (typeof callbackFunction !== "function") throw new TypeError();
+    var length = theArray.length;
+    for (var index = 0; index < length; index++) {
+      if (index in theArray) {
+        if (!callbackFunction.call(thisContext, theArray[index], index, theArray)) break;
+      }
+    }
+    return (index == length);
+  },
 
-	_forEach: function(theArray, callbackFunction, thisContext) {
-		if (typeof callbackFunction !== "function") throw new TypeError();
-		var length = theArray.length;
-		for (var index = 0; index < length; index++) {
-			callbackFunction.call(thisContext, theArray[index], index, theArray);
-		}
-	},
+  _forEach: function(theArray, callbackFunction, thisContext) {
+    if (typeof callbackFunction !== "function") throw new TypeError();
+    var length = theArray.length;
+    for (var index = 0; index < length; index++) {
+      callbackFunction.call(thisContext, theArray[index], index, theArray);
+    }
+  },
 
-	_filter: function(theArray, callbackFunction, thisContext) {
-		if (typeof callbackFunction !== "function") throw new TypeError();
-		var filteredArray = [];
-		var length = theArray.length;
-		for (var index = 0; index < length; index++) {
-			var valueBeforeCall = theArray[index];
-			if (callbackFunction.call(thisContext, theArray[index], index, theArray))
-				filteredArray.push(valueBeforeCall);
-		}
-		return filteredArray;
-	},
+  _filter: function(theArray, callbackFunction, thisContext) {
+    if (typeof callbackFunction !== "function") throw new TypeError();
+    var filteredArray = [];
+    var length = theArray.length;
+    for (var index = 0; index < length; index++) {
+      var valueBeforeCall = theArray[index];
+      if (callbackFunction.call(thisContext, theArray[index], index, theArray))
+        filteredArray.push(valueBeforeCall);
+    }
+    return filteredArray;
+  },
 
-	_indexOf: function(theArray, searchElement, fromIndex) {
-		return this._findIndexOf(theArray, searchElement, fromIndex, +1);
-	},
+  _indexOf: function(theArray, searchElement, fromIndex) {
+    return this._findIndexOf(theArray, searchElement, fromIndex, +1);
+  },
 
-	_lastIndexOf: function(theArray, searchElement, fromIndex) {
-		return this._findIndexOf(theArray, searchElement, fromIndex, -1);
-	},
+  _lastIndexOf: function(theArray, searchElement, fromIndex) {
+    return this._findIndexOf(theArray, searchElement, fromIndex, -1);
+  },
 
-	_findIndexOf: function(theArray, searchElement, fromIndex, direction) {
-		var length = theArray.length;
-		var index = (typeof fromIndex == 'undefined') ? 0 : (
-			(fromIndex >= 0) ? fromIndex : Math.max(length + fromIndex, 0)
-		);
-		while(0 <= index && index < length) {
-			if (index in theArray && theArray[index] === searchElement) return index;
-			index += direction;
-		}
-		return -1;
-	},
+  _findIndexOf: function(theArray, searchElement, fromIndex, direction) {
+    var length = theArray.length;
+    var index = (typeof fromIndex == 'undefined') ? 0 : (
+      (fromIndex >= 0) ? fromIndex : Math.max(length + fromIndex, 0)
+    );
+    while(0 <= index && index < length) {
+      if (index in theArray && theArray[index] === searchElement) return index;
+      index += direction;
+    }
+    return -1;
+  },
 
-	_map: function(theArray, callbackFunction, thisContext) {
-		if (typeof callbackFunction !== "function") throw new TypeError();
-		var length = theArray.length;
-		var mappedArray = new Array(length);
-		for (var index = 0; index < length; index++) {
-			mappedArray[index] = callbackFunction.call(thisContext, theArray[index], index, theArray);
-		}
-		return mappedArray;
-	},
+  _map: function(theArray, callbackFunction, thisContext) {
+    if (typeof callbackFunction !== "function") throw new TypeError();
+    var length = theArray.length;
+    var mappedArray = new Array(length);
+    for (var index = 0; index < length; index++) {
+      mappedArray[index] = callbackFunction.call(thisContext, theArray[index], index, theArray);
+    }
+    return mappedArray;
+  },
 
-	_some: function(theArray, callbackFunction, thisContext) {
-		if (typeof callbackFunction !== "function") throw new TypeError();
-		var length = theArray.length;
-		for (var index = 0; index < length; index++) {
-			if (callbackFunction.call(thisContext, theArray[index], index, theArray)) break;
-		}
-		return (index != length);
-	},
+  _some: function(theArray, callbackFunction, thisContext) {
+    if (typeof callbackFunction !== "function") throw new TypeError();
+    var length = theArray.length;
+    for (var index = 0; index < length; index++) {
+      if (callbackFunction.call(thisContext, theArray[index], index, theArray)) break;
+    }
+    return (index != length);
+  },
 
-	_reduce: function(theArray, callbackFunction, initialValue) {
-		return this._reduceFromDirection(theArray, callbackFunction, initialValue, +1);
-	},
+  _reduce: function(theArray, callbackFunction, initialValue) {
+    return this._reduceFromDirection(theArray, callbackFunction, initialValue, +1);
+  },
 
-	_reduceRight: function(theArray, callbackFunction, initialValue) {
-		return this._reduceFromDirection(theArray, callbackFunction, initialValue, -1);
-	},
+  _reduceRight: function(theArray, callbackFunction, initialValue) {
+    return this._reduceFromDirection(theArray, callbackFunction, initialValue, -1);
+  },
 
-	_reduceFromDirection: function(theArray, callbackFunction, initialValue, direction) {
-		var length = theArray.length;
-		var accumulator;
-		var index = (direction == -1) ? length-1 : 0;
-		//initialValue = (typeof initialValue != 'undefined') ? initialValue : 0;
-		if (typeof initialValue != 'undefined') {
-			accumulator = initialValue;
-		} else {
-			do {
-				if (index in theArray) break;
-				index += direction;
-				if (index < 0 || index >= length) throw new TypeError();
-			} while(true);
-			accumulator = theArray[index];
-			index += direction;
-		}
-		while (0 <= index && index < length) {
-			if (index in theArray)
-				accumulator = callbackFunction.call(
-					undefined, accumulator, theArray[index], index, theArray
-				);
-			index += direction;
-		}
-		return accumulator;
-	}
+  _reduceFromDirection: function(theArray, callbackFunction, initialValue, direction) {
+    var length = theArray.length;
+    var accumulator;
+    var index = (direction == -1) ? length-1 : 0;
+    //initialValue = (typeof initialValue != 'undefined') ? initialValue : 0;
+    if (typeof initialValue != 'undefined') {
+      accumulator = initialValue;
+    } else {
+      do {
+        if (index in theArray) break;
+        index += direction;
+        if (index < 0 || index >= length) throw new TypeError();
+      } while(true);
+      accumulator = theArray[index];
+      index += direction;
+    }
+    while (0 <= index && index < length) {
+      if (index in theArray)
+        accumulator = callbackFunction.call(
+          undefined, accumulator, theArray[index], index, theArray
+        );
+      index += direction;
+    }
+    return accumulator;
+  }
 }))();
 
+/** @namespace */
 kiso.data = kiso.data || {};
 
+/**
+ * @interface
+ * @description Interface for a double ended queue.
+ * <ul>
+ *   <li>pushHead</li>
+ *   <li>pushTail</li>
+ *   <li>popHead</li>
+ *   <li>popTail</li>
+ *   <li>getHeadData</li>
+ *   <li>getTailData</li>
+ * </ul>
+ */
 kiso.data.IDeque = kiso.Interface([
 	'pushHead',
 	'pushTail',
@@ -383,6 +520,10 @@ kiso.data.IDeque = kiso.Interface([
 	'getTailData'
 ]);
 
+/**
+ * @interface
+ * @description Methods for a linked list.
+ */
 kiso.data.ILinkedList = kiso.Interface([
 	'addFirst',
 	'addLast',
@@ -394,6 +535,10 @@ kiso.data.ILinkedList = kiso.Interface([
 	'getData'
 ]);
 
+/**
+ * @interface
+ * @description Methods for a list interator.
+ */
 kiso.data.IListIterator = kiso.Interface([
 	'addAfter',
 	'addBefore',
@@ -407,6 +552,10 @@ kiso.data.IListIterator = kiso.Interface([
 	'setData'
 ]);
 
+/**
+ * @interface
+ * @description Methods for a tree.
+ */
 kiso.data.ITree = kiso.Interface([
 	'addChild',
 	'getChild',
@@ -421,263 +570,402 @@ kiso.data.ITree = kiso.Interface([
 	'isEmpty'
 ]);
 
-kiso.data.AbstractList = kiso.Class({
-	_last: null,
-	_first: null,
-	_size: 0,
-	
-	initialize: function() {
-		this._last = this._newNode();
-		this._first = this._newNode();
-		this._last._prev = this._first;
-		this._first._next = this._last;
-		this._size = 0;
-	},
-	
-	getSize: function() {
-		return this._size;
-	},
-	
-	isEmpty: function() {
-		return (this._size == 0);
-	},
-	
-	toArray: function() {
-		var arrayOut = new Array();
-		var node = this._first._next;
-		while (node != this._last) {
-			arrayOut.push(node._data);
-			node = node._next;
-		}
-		return arrayOut;
-	},
-	
-	_addBefore: function(node, data) {
-		var newNode = this._newNode(data);
-		newNode._prev = node._prev;
-		node._prev = newNode;
-		newNode._next = node;
-		newNode._prev._next = newNode;
-		this._size++;		
-	},
-	
-	_addAfter: function(node, data) {
-		var newNode = this._newNode(data);
-		newNode._next = node._next;
-		node._next = newNode;
-		newNode._prev = node;
-		newNode._next._prev = newNode;
-		this._size++;
-	},
-	
-	_removeNode: function(node) {
-		node._prev._next = node._next;
-		node._next._prev = node._prev;
-		this._size--;
-		return node._data;
-	},
-	
-	_getNode: function(index) {
-		if (index < 0 || index >= this._size) {
-			throw new Error('Index out of bounds.');
-		}
-		var direction = (index*2 > this._size) ? -1 : 1;
-		var node = (direction == 1) ? this._first._next : this._last._prev;
-		var offset = (direction == 1) ? index : (this._size - index - 1);
-		while (offset > 0) {
-			node = (direction == 1) ? node._next : node._prev;
-			offset--;
-		}
-		return node;
-	},
+kiso.data.AbstractList = kiso.Class(/** @lends kiso.data.AbstractList.prototype */{
+  _last: null,
+  _first: null,
+  _size: 0,
 
-	_newNode: function(nodeData) {
-		return {
-			_data: nodeData,
-			_next: null,
-			_prev: null
-		};
-	}
+  /**
+   * @constructs
+   * @description A base class to build various types of lists from.
+   */
+  initialize: function() {
+    this._last = this._newNode();
+    this._first = this._newNode();
+    this._last._prev = this._first;
+    this._first._next = this._last;
+    this._size = 0;
+  },
+
+  /**
+   * @returns {Integer} The current number of elements in the list.
+   */
+  getSize: function() {
+    return this._size;
+  },
+
+  /**
+   * @returns {boolean} True if the list has no elements.
+   */
+  isEmpty: function() {
+    return (this._size == 0);
+  },
+
+  /**
+   * @description Converts the list to an array.
+   * Data for each element in the list is <em>not</em> cloned, but instead pushed directly onto the
+   * array.
+   *
+   * @returns {Array}
+   */
+  toArray: function() {
+    var arrayOut = new Array();
+    var node = this._first._next;
+    while (node != this._last) {
+      arrayOut.push(node._data);
+      node = node._next;
+    }
+    return arrayOut;
+  },
+
+  _addBefore: function(node, data) {
+    var newNode = this._newNode(data);
+    newNode._prev = node._prev;
+    node._prev = newNode;
+    newNode._next = node;
+    newNode._prev._next = newNode;
+    this._size++;
+  },
+
+  _addAfter: function(node, data) {
+    var newNode = this._newNode(data);
+    newNode._next = node._next;
+    node._next = newNode;
+    newNode._prev = node;
+    newNode._next._prev = newNode;
+    this._size++;
+  },
+
+  _removeNode: function(node) {
+    node._prev._next = node._next;
+    node._next._prev = node._prev;
+    this._size--;
+    return node._data;
+  },
+
+  _getNode: function(index) {
+    if (index < 0 || index >= this._size) {
+      throw new Error('Index out of bounds.');
+    }
+    var direction = (index*2 > this._size) ? -1 : 1;
+    var node = (direction == 1) ? this._first._next : this._last._prev;
+    var offset = (direction == 1) ? index : (this._size - index - 1);
+    while (offset > 0) {
+      node = (direction == 1) ? node._next : node._prev;
+      offset--;
+    }
+    return node;
+  },
+
+  _newNode: function(nodeData) {
+    return {
+      _data: nodeData,
+      _next: null,
+      _prev: null
+    };
+  }
 });
 
+/**
+ * @class
+ * @description A double ended queue
+ * @augments kiso.data.AbstractList
+ */
 kiso.data.Deque = kiso.Class(
-	{
-		parent: kiso.data.AbstractList,
-		interfaces: kiso.data.IDeque
-	},
-	{
-		pushHead: function(data) {
-			this._addBefore(this._last, data);
-		},
+  {
+    parent: kiso.data.AbstractList,
+    interfaces: kiso.data.IDeque
+  },
+  /** @lends kiso.data.Deque.prototype */
+  {
+    /**
+     * @description Push a new element on to the head of the list.
+     * @param data The data for the new element.
+     */
+    pushHead: function(data) {
+      this._addBefore(this._last, data);
+    },
 
-		pushTail: function(data) {
-			this._addAfter(this._first, data);
-		},
+    /**
+     * @description Push a new element on to the tail of the list.
+     * @param data The data for the new element.
+     */
+    pushTail: function(data) {
+      this._addAfter(this._first, data);
+    },
 
-		popHead: function() {
-			if (this.isEmpty()) {
-				throw new Error('Cannot pop head on empty Deque');
-			}
-			return this._removeNode(this._last._prev);
-		},
+    /**
+     * @description Pop the last element off the head of the list.
+     * @returns The data of the last element.
+     * @throws A error when the list is empty.
+     */
+    popHead: function() {
+      if (this.isEmpty()) {
+        throw new Error('Cannot pop head on empty Deque');
+      }
+      return this._removeNode(this._last._prev);
+    },
 
-		popTail: function() {
-			if (this.isEmpty()) {
-				throw new Error('Cannot pop tail on empty Deque');
-			}
-			return this._removeNode(this._first._next);
-		},
+    /**
+     * @description Pop the last element off the tail of the list.
+     * @returns The data of the last element.
+     * @throws A error when the list is empty.
+     */
+    popTail: function() {
+      if (this.isEmpty()) {
+        throw new Error('Cannot pop tail on empty Deque');
+      }
+      return this._removeNode(this._first._next);
+    },
 
-		getHeadData: function(index) {
-			return this._getNode(this._size-index-1)._data;
-		},
+    /**
+     * @description Retrieves the data of the indexed element starting at the head of the list.  Does not alter the list.
+     * @param {integer} index The element index (zero based) from the head of the list.
+     * @returns The data from the specified element.
+     *
+     */
+    getHeadData: function(index) {
+      return this._getNode(this._size-index-1)._data;
+    },
 
-		getTailData: function(index) {
-			return this._getNode(index)._data;
-		}
-	}
+    /**
+     * @description Retrieves the data of the indexed element starting at the tail of the list.  Does not alter the list.
+     * @param {integer} index The element index (zero based) from the head of the list.
+     * @returns The data from the specified element.
+     *
+     */
+    getTailData: function(index) {
+      return this._getNode(index)._data;
+    }
+  }
 );
 
-kiso.data.ILinkedList = kiso.Interface([
-	'addFirst',
-	'addLast',
-	'addBefore',
-	'addAfter',
-	'remove',
-	'removeFirst',
-	'removeLast',
-	'getData'
-]);
-
+/**
+ * @class
+ * @description A linked list.
+ * @augments kiso.data.AbstractList
+ */
 kiso.data.LinkedList = kiso.Class(
-	{
-		parent: kiso.data.AbstractList,
-		interfaces: kiso.data.ILinkedList
-	},
-	{
-		addFirst: function(data) {
-			this._addAfter(this._first, data);
-		},
+  {
+    parent: kiso.data.AbstractList,
+    interfaces: kiso.data.ILinkedList
+  },
+  /** @lends kiso.data.LinkedList.prototype */
+  {
+    /**
+     * @description Add a new element to the front of the list.
+     * @param data The data for the new first element.
+     */
+    addFirst: function(data) {
+      this._addAfter(this._first, data);
+    },
 
-		addLast: function(data) {
-			this._addBefore(this._last, data);
-		},
+    /**
+     * @description Add a new element to the end of the list.
+     * @param data The data for the new last element.
+     */
+    addLast: function(data) {
+      this._addBefore(this._last, data);
+    },
 
-		addBefore: function(index, data) {
-			this._addBefore(this._getNode(index), data);
-		},
+    /**
+     * @description Add a new element just before the indexed element.
+     * @param {Integer} index The zero based offset from the front of the list.
+     * @param data The data for the new element.
+     */
+    addBefore: function(index, data) {
+      this._addBefore(this._getNode(index), data);
+    },
 
-		addAfter: function(index, data) {
-			this._addAfter(this._getNode(index), data);
-		},
+    /**
+     * @description Add a new element just after the indexed element.
+     * @param {Integer} index The zero based offset from the front of the list.
+     * @param data The data for the new element.
+     */
+    addAfter: function(index, data) {
+      this._addAfter(this._getNode(index), data);
+    },
 
-		remove: function(index) {
-			return this._removeNode(this._getNode(index));
-		},
+    /**
+     * @description Remove the specfied element.
+     * @param {Integer} index The zero based offset from the front of the list.
+     * @throws A an error if the index is out of bounds.
+     */
+    remove: function(index) {
+      return this._removeNode(this._getNode(index));
+    },
 
-		removeFirst: function() {
-			if (this.isEmpty()) {
-				throw new Error('Cannot remove first from empty LinkedList');
-			}
-			return this._removeNode(this._first._next);
-		},
+    /**
+     * @description Remove the first element in the list.
+     * @throws A an error if the list is empty.
+     */
+    removeFirst: function() {
+      if (this.isEmpty()) {
+        throw new Error('Cannot remove first from empty LinkedList');
+      }
+      return this._removeNode(this._first._next);
+    },
 
-		removeLast: function() {
-			if (this.isEmpty()) {
-				throw new Error('Cannot remove last from empty LinkedList');
-			}
-			return this._removeNode(this._last._prev);
-		},
+    /**
+     * @description Remove the last element in the list.
+     * @throws A an error if the list is empty.
+     */
+    removeLast: function() {
+      if (this.isEmpty()) {
+        throw new Error('Cannot remove last from empty LinkedList');
+      }
+      return this._removeNode(this._last._prev);
+    },
 
-		getData: function(index) {
-			return this._getNode(index)._data;
-		}
-	}
+    /**
+     * @description Get the data of an element without altering the list.
+     * @param {Integer} index The zero base offset from the front of the list.
+     * @returns The data from the specified element.
+     * @throws A an error if the list is empty.
+     */
+    getData: function(index) {
+      return this._getNode(index)._data;
+    }
+  }
 );
 
 kiso.data.ListIterator = kiso.Class(
-	{
-		constants: {
-			STARTATFIRST: 0,
-			STARTATLAST: 1
-		}
-	},
-	{
-		_list: null,
-		_currentNode: null,
-		_index: null,
+  {
+    constants: /** @lends kiso.data.ListIterator */ {
+      /** @constant */
+      STARTATFIRST: 0,
+      /** @constant */
+      STARTATLAST: 1
+    }
+  },
+  /** @lends kiso.data.ListIterator.prototype */
+  {
+    _list: null,
+    _currentNode: null,
+    _index: null,
 
-		initialize: function(list, direction) {
-			if (list.isEmpty()) {
-				throw new Error('Cannot iterate on empty list');
-			}
-			this._list = list;
-			this._currentNode = (direction == kiso.data.ListIterator.STARTATLAST) ?
-				this._list._last._prev : this._list._first._next;
-			this._index = (direction == kiso.data.ListIterator.STARTATLAST) ?
-				this._list._size - 1 : 0;
-		},
+    /**
+     * @constructs
+     * @description Creates a new iterator for the given list and in the specified direction.
+     * @param {List} list The list to iterator over.
+     * @param {STARTATFIRST|STARTATLAST} direction Which end of the list to start from.
+     * @returns {ListIterator} A new list iterator.
+     */
+    initialize: function(list, direction) {
+      if (list.isEmpty()) {
+        throw new Error('Cannot iterate on empty list');
+      }
+      this._list = list;
+      this._currentNode = (direction == kiso.data.ListIterator.STARTATLAST) ?
+        this._list._last._prev : this._list._first._next;
+      this._index = (direction == kiso.data.ListIterator.STARTATLAST) ?
+        this._list._size - 1 : 0;
+    },
 
-		addAfter: function(data) {
-			this._list._addAfter(this._currentNode, data);
-		},
+    /**
+     * @description Adds a new element to the list after the current element.
+     * @param data The data of the new element.
+     */
+    addAfter: function(data) {
+      this._list._addAfter(this._currentNode, data);
+    },
 
-		addBefore: function(data) {
-			this._list._addBefore(this._currentNode, data);
-			this._index++;
-		},
+    /**
+     * @description Adds a new element to the list before the current element.
+     * @param data The data of the new element.
+     */
+    addBefore: function(data) {
+      this._list._addBefore(this._currentNode, data);
+      this._index++;
+    },
 
-		hasNext: function() {
-			return (this._currentNode._next != this._list._last);
-		},
+    /**
+     * @description Returns whether there is a next element.
+     * @returns True if the current element has an element after it.
+     */
+    hasNext: function() {
+      return (this._currentNode._next != this._list._last);
+    },
 
-		hasPrevious: function() {
-			return (this._currentNode._prev != this._list._first);
-		},
+    /**
+     * @description Returns whether there is a previous element.
+     * @returns True if the current element has an element before it.
+     */
+    hasPrevious: function() {
+      return (this._currentNode._prev != this._list._first);
+    },
 
-		getIndex: function() {
-			return this._index;
-		},
+    /**
+     * @description Get the index of the current element.
+     * @returns The zero based index from the front of the list of the current element.
+     */
+    getIndex: function() {
+      return this._index;
+    },
 
-		gotoNext: function() {
-			if (this.hasNext()) {
-				this._currentNode = this._currentNode._next;
-				this._index++;
-			} else {
-				throw new Error('No such element');
-			}
-		},
+    /**
+     * @description Moves the ListIterator to the next element in the list.
+     * @throws An error if there is no next element.
+     */
+    gotoNext: function() {
+      if (this.hasNext()) {
+        this._currentNode = this._currentNode._next;
+        this._index++;
+      } else {
+        throw new Error('No such element');
+      }
+    },
 
-		gotoPrevious: function() {
-			if (this.hasPrevious()) {
-				this._currentNode = this._currentNode._prev;
-				this._index--;
-			} else {
-				throw new Error('No such element');
-			}
-		},
+    /**
+     * @description Moves the ListIterator to the previous element in the list.
+     * @throws An error if there is no previous element.
+     */
+    gotoPrevious: function() {
+      if (this.hasPrevious()) {
+        this._currentNode = this._currentNode._prev;
+        this._index--;
+      } else {
+        throw new Error('No such element');
+      }
+    },
 
-		remove: function() {
-			var oldNode = this._currentNode;
-			if (this.hasNext()) {
-				this.gotoNext();
-			} else if (this.hasPrevious()) {
-				this.gotoPrevious();
-			} else {
-				this._currentNode = null;
-			}
-			this._list._removeNode(oldNode);
-		},
+    /**
+     * @description Removes the current element from the list.
+     */
+    remove: function() {
+      var oldNode = this._currentNode;
+      if (this.hasNext()) {
+        this.gotoNext();
+      } else if (this.hasPrevious()) {
+        this.gotoPrevious();
+      } else {
+        this._currentNode = null;
+      }
+      this._list._removeNode(oldNode);
+    },
 
-		getData: function() {
-			return this._currentNode._data;
-		},
+    /**
+     * @description Gets the data of the current element without altering the list.
+     * @returns The data for the current element.
+     */
+    getData: function() {
+      return this._currentNode._data;
+    },
 
-		setData: function(data) {
-			this._currentNode._data = data;
-		}
-	}
+    /**
+     * @description Sets the data of the current element.
+     * @param data The new data for the current element.
+     */
+    setData: function(data) {
+      this._currentNode._data = data;
+    }
+  }
 );
+/**
+ * @description A Tree.
+ * This class will soon be reworked into an AbstractTree and some derived Tree classes, so I'm
+ * waiting to document till after that's done.
+ */
 kiso.data.Tree = kiso.Class(
 	{
 		interfaces: kiso.data.ITree
@@ -743,19 +1031,19 @@ kiso.data.Tree = kiso.Class(
 				this._childTrees.splice(index,1);
 			}
 		},
-		
+
 		getData: function() {
 			return this._data;
 		},
-		
+
 		setData: function(data) {
 			this._data = data;
 		},
-		
+
 		purgeData: function() {
 			this._data = null;
 		},
-		
+
 		isEmpty: function() {
 			return (this._data == null);
 		}

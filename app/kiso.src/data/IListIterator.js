@@ -1,3 +1,7 @@
+/**
+ * @interface
+ * @description Methods for a list interator.
+ */
 kiso.data.IListIterator = kiso.Interface([
 	'addAfter',
 	'addBefore',

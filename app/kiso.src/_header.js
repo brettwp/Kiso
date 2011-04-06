@@ -23,6 +23,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-/** @namespace */
+/**
+ * @namespace kiso
+ * @description Contains the core functions <code>Class</code> and <code>Interface</code> along
+ *   with all sub-namespaces of the Kiso library.
+ * @author Brett Pontarelli (www.github.com/brettwp/Kiso)
+ * @version 0.3.0
+ */
 this.kiso = this.kiso || {};
+/** @ignore */
 kiso.VERSION = '0.3.0';

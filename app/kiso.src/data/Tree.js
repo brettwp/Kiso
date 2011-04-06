@@ -1,3 +1,8 @@
+/**
+ * @description A Tree.
+ * This class will soon be reworked into an AbstractTree and some derived Tree classes, so I'm
+ * waiting to document till after that's done.
+ */
 kiso.data.Tree = kiso.Class(
 	{
 		interfaces: kiso.data.ITree
@@ -63,19 +68,19 @@ kiso.data.Tree = kiso.Class(
 				this._childTrees.splice(index,1);
 			}
 		},
-		
+
 		getData: function() {
 			return this._data;
 		},
-		
+
 		setData: function(data) {
 			this._data = data;
 		},
-		
+
 		purgeData: function() {
 			this._data = null;
 		},
-		
+
 		isEmpty: function() {
 			return (this._data == null);
 		}

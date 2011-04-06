@@ -1,3 +1,7 @@
+/**
+ * @interface
+ * @description Methods for a tree.
+ */
 kiso.data.ITree = kiso.Interface([
 	'addChild',
 	'getChild',
