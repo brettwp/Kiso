@@ -24,11 +24,8 @@
  * THE SOFTWARE.
  */
 /**
- * @namespace kiso
- * @description Contains the core functions <code>Class</code> and <code>Interface</code> along
- *   with all sub-namespaces of the Kiso library.
- * @author Brett Pontarelli (www.github.com/brettwp/Kiso)
- * @version 0.3.0
+ *  @namespace Contains the core functions <code>Class</code> and <code>Interface</code> along
+ *  with all sub-namespaces of the Kiso library.
  */
 this.kiso = this.kiso || {};
 /** @ignore */

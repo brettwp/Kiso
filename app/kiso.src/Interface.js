@@ -19,6 +19,7 @@ kiso.Interface = function(parentInterface, methods) {
     }
     var newInterface = {
       _methods: [],
+      /** @ignore */
       getMethods: function() { return this._methods; }
     };
     setupInterfaceFromParent(newInterface, parentInterface);

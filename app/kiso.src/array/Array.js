@@ -3,9 +3,9 @@
  * @description A singleton of extended array functions.
  *
  * Methods of <code>kiso.array</code> allow for cross browser implementation of some common array
- * manipulations.  Each function will execute using native browser array functions in those browsers
- * that implements them and will fall back on javascript implementaions in those browsers that
- * don't.
+ * manipulations.  Each method will execute using native browser array functions in those browsers
+ * that implement them and will fall back on javascript implementaions in those browsers that
+ * do not.
  */
 kiso.array = new (kiso.Class(/** @lends kiso.array */{
   /**
@@ -15,7 +15,7 @@ kiso.array = new (kiso.Class(/** @lends kiso.array */{
    * @param {Array} theArray An array.
    * @param {Function} callback Function to test for each element.
    * @param {Object} [thisObject] Object to use as this when executing callback.
-   * @returns True if for every item in the array the callback function returns true.
+   * @returns {Boolean} True if for every item in the array the callback function returns true.
    */
   every: function() {
     return this._useNativeOrWrapper('every', arguments);
@@ -28,7 +28,7 @@ kiso.array = new (kiso.Class(/** @lends kiso.array */{
    * @param {Array} theArray An array.
    * @param {Function} callback Function to test each element of the array.
    * @param {Object} [thisObject] Object to use as this when executing callback.
-   * @returns A new array
+   * @returns {Array} A new array
    */
   filter: function() {
     return this._useNativeOrWrapper('filter', arguments);
@@ -61,6 +61,7 @@ kiso.array = new (kiso.Class(/** @lends kiso.array */{
   },
 
   /**
+   * @function
    * @description Returns the last index at which a given element can be found in the array, or -1 if it is not present.
    *   If the index is greater than or equal to the length of the array, the whole array will be searched. If negative, it is taken as the offset from the end of the array. Note that even when the index is negative, the array is still searched from back to front. If the calculated index is less than 0, -1 is returned, and the array is not searched.
    *   Calls to the callback function are passed three values:
@@ -75,13 +76,14 @@ kiso.array = new (kiso.Class(/** @lends kiso.array */{
   },
 
   /**
+   * @function
    * @description Creates a new array with the results of calling a provided function on every element in this array.
    *   Calls to the callback function are passed three values:
    *   <code>value, index, theArray</code> such that <code>theArray[index] == value</code>
    * @param {Array} theArray An array.
    * @param {Function} callback A function that produces an element of the new Array from an element of the current one.
    * @param {Object} [thisObject] Object to use as this when executing callback.
-   * @returns A new array
+   * @returns {Array} A new array
    */
   map: function() {
     return this._useNativeOrWrapper('map', arguments);
@@ -95,23 +97,24 @@ kiso.array = new (kiso.Class(/** @lends kiso.array */{
    *   calls is the value returned from the last call to the callback function.
    * @param {Array} theArray An array.
    * @param {Function} callback Function to execute on each value in the array.
-   * @param [initialValue] The value to use as the first argument to the first call of the callback.
-   * @returns The last value returned by the callback function.
+   * @param {*} [initialValue] The value to use as the first argument to the first call of the callback.
+   * @returns {*} The last value returned by the callback function.
    */
   reduce: function() {
     return this._useNativeOrWrapper('reduce', arguments);
   },
 
   /**
-   * @description Apply a function simultaneously against two values of the array (from right-to-left) as to reduce it to a single value.
+   * @description Apply a function simultaneously against two values of the array (from
+   *   right-to-left) as to reduce it to a single value.
    *   Calls to the callback function are passed four values:
    *   <code>accumulator, value, index, theArray</code> such that <code>theArray[index] == value</code>.
    *   The <code>accumulator</code> on the first call is the <code>initialValue</code> and on all subsequent
    *   calls is the value returned from the last call to the callback function.
    * @param {Array} theArray An array.
    * @param {Function} callback Function to execute on each value in the array.
-   * @param [initialValue] The value to use as the first argument to the first call of the callback.
-   * @returns The last value returned by the callback function.
+   * @param {*} [initialValue] The value to use as the first argument to the first call of the callback.
+   * @returns {*} The last value returned by the callback function.
    */
   reduceRight: function() {
     return this._useNativeOrWrapper('reduceRight', arguments);
@@ -124,7 +127,7 @@ kiso.array = new (kiso.Class(/** @lends kiso.array */{
    * @param {Array} theArray An array.
    * @param {Function} callback Function to test for each element.
    * @param {Object} [thisObject] Object to use as this when executing callback.
-   * @returns True if for any item in the array the callback function returns true.  False only if for every item in the array the callback function returns false.
+   * @returns {Boolean} True if for any item in the array the callback function returns true.  False only if for every item in the array the callback function returns false.
    */
   some: function() {
     return this._useNativeOrWrapper('some', arguments);

@@ -2,6 +2,7 @@
  * @class
  * @description A double ended queue
  * @augments kiso.data.AbstractList
+ * @implements kiso.data.IDeque
  */
 kiso.data.Deque = kiso.Class(
   {

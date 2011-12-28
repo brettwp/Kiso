@@ -346,7 +346,7 @@ unittest.testClass = function() {
     equal(errorsThrown, 2);
 	});
 
-	test('Inheritance or multiple functions calls parent function with proper this', function() {
+	test('Inheritance of multiple functions calls parent function with proper this', function() {
 		var parentA = kiso.Class({
 			value: null,
 			other: null,

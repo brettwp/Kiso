@@ -25,7 +25,7 @@
  */
 /**
  * @namespace kiso
- * @description  Contains the core functions <code>Class</code> and <code>Interface</code> along
+ * @description Contains the core functions <code>Class</code> and <code>Interface</code> along
  *   with all sub-namespaces of the Kiso library.
  * @author Brett Pontarelli (www.github.com/brettwp/Kiso)
  * @version 0.3.0
@@ -1050,6 +1050,7 @@ kiso.data.Tree = kiso.Class(
 	}
 );
 
+/** @namespace */
 kiso.geom = kiso.geom || {};
 
 kiso.geom.IConvexHull = kiso.Interface([

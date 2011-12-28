@@ -2,6 +2,7 @@
  * @class
  * @description A linked list.
  * @augments kiso.data.AbstractList
+ * @implements kiso.data.ILinkedList
  */
 kiso.data.LinkedList = kiso.Class(
   {
